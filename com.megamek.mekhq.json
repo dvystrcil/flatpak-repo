@@ -26,7 +26,9 @@
         "mkdir -p /app/mekhq",
         "tar -xzf /app/build-dir/mekhq-0.50.12.tar.gz -C /app/mekhq",
         "cp /app/mekhq/mekhq-0.50.12/MegaMek.jar /app/mekhq/",
-        "install -D /app/build-dir/mekhq-wrapper.sh /app/bin/mekhq"
+        "install -D /app/build-dir/mekhq-wrapper.sh /app/bin/mekhq",
+        "install -D /app/build-dir/mekhq.png /app/share/icons/hicolor/256x256/apps/com.megamek.mekhq.png",
+        "install -D /app/build-dir/com.megamek.mekhq.desktop /app/share/applications/com.megamek.mekhq.desktop"
       ],
       "sources": [
         {
@@ -36,6 +38,14 @@
         {
           "type": "file",
           "path": "mekhq-wrapper.sh"
+        },
+        {
+          "type": "file",
+          "path": "mekhq.png"
+        },
+        {
+          "type": "file",
+          "path": "com.megamek.mekhq.desktop"
         }
       ]
     }
