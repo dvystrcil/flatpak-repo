@@ -6,66 +6,25 @@ on:
     paths:
       - '**.json'
       - '**.sh'
+      - '**.png'
+      - '**.desktop'
 
 jobs:
-  validate:
+  build-pr:
+    name: Build MekHQ Flatpak (PR)
     runs-on: ubuntu-latest
-
+    container:
+      image: ghcr.io/flathub-infra/flatpak-github-actions:gnome-48
+      options: --privileged
     steps:
-      - name: Checkout pull request
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-
-      - name: Install Flatpak
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y flatpak flatpak-builder
-
-      - name: Setup Flathub
-        run: |
-          flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-          flatpak install --user flathub org.freedesktop.Platform/23.08 org.freedesktop.Sdk/23.08
-
-      - name: Validate each manifest
-        run: |
-          for manifest in *.json; do
-            if [ -f "$manifest" ]; then
-              app_id=$(python3 -c "import json; print(json.load(open('$manifest'))['app-id'])" 2>/dev/null)
-              if [ -z "$app_id" ]; then
-                echo "ERROR: Invalid JSON in $manifest"
-                exit 1
-              fi
-              echo "Validated: $manifest -> $app_id"
-            fi
-          done
-
-      - name: Build each Flatpak (dry-run)
-        run: |
-          for manifest in *.json; do
-            if [ -f "$manifest" ]; then
-              app_name=$(basename "$manifest" .json)
-              echo "Building (dry-run) $app_name..."
-              # Use --user to avoid needing system permissions
-              flatpak-builder --user --install --force-clean "build-$app_name" "$manifest"
-              flatpak build-finish "build-$app_name" "$app_name" 2>/dev/null || true
-              echo "✓ $app_name build validation passed"
-            fi
-          done
-
-      - name: Check for duplicate app IDs
-        run: |
-          app_ids=()
-          for manifest in *.json; do
-            if [ -f "$manifest" ]; then
-              app_id=$(python3 -c "import json; print(json.load(open('$manifest'))['app-id'])" 2>/dev/null)
-              if [ -n "$app_id" ]; then
-                if [[ " ${app_ids[@]} " =~ " ${app_id} " ]]; then
-                  echo "ERROR: Duplicate app-id found: $app_id"
-                  exit 1
-                fi
-                app_ids+=("$app_id")
-              fi
-            fi
-          done
-          echo "All app IDs are unique: ${app_ids[*]}"
+      
+      - name: Build Flatpak (dry-run)
+        uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+        with:
+          manifest-path: com.megamek.mekhq.json
+          build-bundle: "false"
+          run-tests: "false"
+          verbose: "true"
