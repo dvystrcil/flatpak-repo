@@ -27,7 +27,7 @@ jobs:
           manifest-path: com.megamek.mekhq.json
           cache-key: flatpak-builder-${{ github.sha }}
           repository-url: https://flathub.org/repo/flathub.flatpakrepo
-          upload-artifact: false
+          xvfb: false
       
       - name: Upload artifact
         uses: actions/upload-artifact@v4
