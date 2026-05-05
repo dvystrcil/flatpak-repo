@@ -1,0 +1,43 @@
+{
+  "app-id": "com.megamek.mekhq",
+  "runtime": "org.freedesktop.Platform",
+  "runtime-version": "23.08",
+  "sdk": "org.freedesktop.Sdk",
+  "command": "bin/mekhq",
+  "finish-args": [
+    "--share=network",
+    "--share=ipc",
+    "--socket=fallback-x11",
+    "--socket=wayland",
+    "--device=dri",
+    "--filesystem=home",
+    "--filesystem=xdg-download"
+  ],
+  "modules": [
+    {
+      "name": "openjdk-21",
+      "module": "org.freedesktop.Java.OpenJDK",
+      "version": "21"
+    },
+    {
+      "name": "mekhq",
+      "buildsystem": "simple",
+      "build-commands": [
+        "mkdir -p /app/mekhq",
+        "tar -xzf /app/build-dir/mekhq-0.50.12.tar.gz -C /app/mekhq",
+        "cp /app/mekhq/mekhq-0.50.12/MegaMek.jar /app/mekhq/",
+        "install -D /app/build-dir/mekhq-wrapper.sh /app/bin/mekhq"
+      ],
+      "sources": [
+        {
+          "type": "file",
+          "url": "https://github.com/MegaMek/mekhq/releases/download/v0.50.12/mekhq-0.50.12.tar.gz"
+        },
+        {
+          "type": "file",
+          "path": "mekhq-wrapper.sh"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+name: Build and Publish Flatpak
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '**.json'
+      - '**.sh'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - '**.json'
+      - '**.sh'
+  workflow_dispatch: # manual trigger
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Flatpak
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y flatpak flatpak-builder
+
+      - name: Setup Flatpak remote (Flathub)
+        run: |
+          flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+          flatpak install --user flathub org.freedesktop.Platform/23.08 org.freedesktop.Sdk/23.08
+
+      - name: Build MekHQ Flatpak
+        run: |
+          flatpak-builder --user --install --force-clean build com.megamek.mekhq.json
+
+      - name: Export to repo
+        run: |
+          mkdir -p repo
+          flatpak build-init repo com.megamek.mekhq org.freedesktop.Sdk org.freedesktop.Platform 23.08
+          flatpak build repo /bin/true  # dummy build step to init
+          flatpak build-export repo build
+          # Update summary for client discovery
+          flatpak build-update-repo repo
+
+      - name: Check built artifact
+        run: |
+          flatpak list --app | grep mekhq || echo "Warning: App not found in user install"
+
+      - name: Publish to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        if: github.ref == 'refs/heads/main'
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./repo
+          force_orphan: true

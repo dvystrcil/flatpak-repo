@@ -1,0 +1,5 @@
+# Flatpak repository files
+
+repo/
+*.tar.gz
+*.sh~
