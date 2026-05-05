@@ -6,59 +6,32 @@ on:
     paths:
       - '**.json'
       - '**.sh'
+      - '**.png'
+      - '**.desktop'
   workflow_dispatch:
 
 jobs:
-  build-all:
+  build-mekhq:
+    name: Build MekHQ Flatpak
     runs-on: ubuntu-latest
-
+    container:
+      image: ghcr.io/flathub-infra/flatpak-github-actions:gnome-48
+      options: --privileged
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Install Flatpak
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y flatpak flatpak-builder
-
-      - name: Setup Flatpak remote (Flathub)
-        run: |
-          flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-          flatpak install --user flathub org.freedesktop.Platform/23.08 org.freedesktop.Sdk/23.08
-
-      - name: Build each Flatpak app
-        run: |
-          mkdir -p repo
-          for manifest in *.json; do
-            if [ -f "$manifest" ]; then
-              app_name=$(basename "$manifest" .json)
-              echo "Building $app_name..."
-              flatpak-builder --user --install --force-clean "build-$app_name" "$manifest"
-              # Export to repo (using runtime export)
-              flatpak build-init "repo-$app_name" "$app_name" org.freedesktop.Sdk org.freedesktop.Platform 23.08
-              flatpak build-export "repo-$app_name" "build-$app_name"
-              # Merge into main repo
-              flatpak build-update-repo "repo-$app_name"
-            fi
-          done
-
-      - name: Create unified repo
-        run: |
-          mkdir -p repo
-          for manifest in *.json; do
-            if [ -f "$manifest" ]; then
-              app_name=$(basename "$manifest" .json)
-              flatpak build-update-repo "repo-$app_name"
-              cp -r "repo-$app_name/objects" "repo/" 2>/dev/null || true
-              cp -r "repo-$app_name/refs" "repo/" 2>/dev/null || true
-            fi
-          done
-          # Generate summary for client
-          flatpak build-update-repo repo
-
-      - name: Publish to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
+      - uses: actions/checkout@v4
+      
+      - name: Build Flatpak
+        uses: flatpak/flatpak-github-actions/flatpak-builder@v6
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./repo
-          force_orphan: true
+          bundle: mekhq.flatpak
+          manifest-path: com.megamek.mekhq.json
+          cache-key: flatpak-builder-${{ github.sha }}
+          repository-url: https://flathub.org/repo/flathub.flatpakrepo
+          upload-artifact: false
+      
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mekhq-flatpak
+          path: mekhq.flatpak
+          retention-days: 5
