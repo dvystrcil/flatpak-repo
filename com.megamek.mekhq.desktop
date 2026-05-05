@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=MekHQ
+Comment=BattleTech Tactical Combat Simulator
+Exec=flatpak run com.megamek.mekhq %U
+Icon=com.megamek.mekhq
+Terminal=false
+Categories=Game;
+StartupNotify=true
