@@ -6,15 +6,10 @@ on:
     paths:
       - '**.json'
       - '**.sh'
-  pull_request:
-    branches: [ main ]
-    paths:
-      - '**.json'
-      - '**.sh'
-  workflow_dispatch: # manual trigger
+  workflow_dispatch:
 
 jobs:
-  build:
+  build-all:
     runs-on: ubuntu-latest
 
     steps:
@@ -31,26 +26,38 @@ jobs:
           flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
           flatpak install --user flathub org.freedesktop.Platform/23.08 org.freedesktop.Sdk/23.08
 
-      - name: Build MekHQ Flatpak
-        run: |
-          flatpak-builder --user --install --force-clean build com.megamek.mekhq.json
-
-      - name: Export to repo
+      - name: Build each Flatpak app
         run: |
           mkdir -p repo
-          flatpak build-init repo com.megamek.mekhq org.freedesktop.Sdk org.freedesktop.Platform 23.08
-          flatpak build repo /bin/true  # dummy build step to init
-          flatpak build-export repo build
-          # Update summary for client discovery
-          flatpak build-update-repo repo
+          for manifest in *.json; do
+            if [ -f "$manifest" ]; then
+              app_name=$(basename "$manifest" .json)
+              echo "Building $app_name..."
+              flatpak-builder --user --install --force-clean "build-$app_name" "$manifest"
+              # Export to repo (using runtime export)
+              flatpak build-init "repo-$app_name" "$app_name" org.freedesktop.Sdk org.freedesktop.Platform 23.08
+              flatpak build-export "repo-$app_name" "build-$app_name"
+              # Merge into main repo
+              flatpak build-update-repo "repo-$app_name"
+            fi
+          done
 
-      - name: Check built artifact
+      - name: Create unified repo
         run: |
-          flatpak list --app | grep mekhq || echo "Warning: App not found in user install"
+          mkdir -p repo
+          for manifest in *.json; do
+            if [ -f "$manifest" ]; then
+              app_name=$(basename "$manifest" .json)
+              flatpak build-update-repo "repo-$app_name"
+              cp -r "repo-$app_name/objects" "repo/" 2>/dev/null || true
+              cp -r "repo-$app_name/refs" "repo/" 2>/dev/null || true
+            fi
+          done
+          # Generate summary for client
+          flatpak build-update-repo repo
 
       - name: Publish to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
-        if: github.ref == 'refs/heads/main'
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./repo

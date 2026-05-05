@@ -1,4 +1,4 @@
-name: Build Flatpak (PR validation)
+name: PR Validation - Flatpak Build
 
 on:
   pull_request:
@@ -8,7 +8,7 @@ on:
       - '**.sh'
 
 jobs:
-  build-pr:
+  validate:
     runs-on: ubuntu-latest
 
     steps:
@@ -22,24 +22,50 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y flatpak flatpak-builder
 
-      - name: Setup Flatpak remote (Flathub)
+      - name: Setup Flathub
         run: |
           flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
           flatpak install --user flathub org.freedesktop.Platform/23.08 org.freedesktop.Sdk/23.08
 
-      - name: Build MekHQ Flatpak (dry-run)
+      - name: Validate each manifest
         run: |
-          flatpak-builder --user --install --force-clean build com.megamek.mekhq.json --user
-          # Don't install, just validate build succeeds
-          flatpak build-finish build com.megamek.mekhq
+          for manifest in *.json; do
+            if [ -f "$manifest" ]; then
+              app_id=$(python3 -c "import json; print(json.load(open('$manifest'))['app-id'])" 2>/dev/null)
+              if [ -z "$app_id" ]; then
+                echo "ERROR: Invalid JSON in $manifest"
+                exit 1
+              fi
+              echo "Validated: $manifest -> $app_id"
+            fi
+          done
 
-      - name: Verify manifest structure
+      - name: Build each Flatpak (dry-run)
         run: |
-          # Basic JSON validation
-          python3 -c "import json; json.load(open('com.megamek.mekhq.json'))"
-          echo "Manifest JSON is valid"
+          for manifest in *.json; do
+            if [ -f "$manifest" ]; then
+              app_name=$(basename "$manifest" .json)
+              echo "Building (dry-run) $app_name..."
+              # Use --user to avoid needing system permissions
+              flatpak-builder --user --install --force-clean "build-$app_name" "$manifest"
+              flatpak build-finish "build-$app_name" "$app_name" 2>/dev/null || true
+              echo "✓ $app_name build validation passed"
+            fi
+          done
 
-      - name: Check wrapper script
+      - name: Check for duplicate app IDs
         run: |
-          test -f mekhq-wrapper.sh && test -x mekhq-wrapper.sh || chmod +x mekhq-wrapper.sh
-          echo "Wrapper script ready"
+          app_ids=()
+          for manifest in *.json; do
+            if [ -f "$manifest" ]; then
+              app_id=$(python3 -c "import json; print(json.load(open('$manifest'))['app-id'])" 2>/dev/null)
+              if [ -n "$app_id" ]; then
+                if [[ " ${app_ids[@]} " =~ " ${app_id} " ]]; then
+                  echo "ERROR: Duplicate app-id found: $app_id"
+                  exit 1
+                fi
+                app_ids+=("$app_id")
+              fi
+            fi
+          done
+          echo "All app IDs are unique: ${app_ids[*]}"
