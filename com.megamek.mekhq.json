@@ -15,19 +15,16 @@
   ],
   "modules": [
     {
-      "name": "openjdk-21",
-      "module": "org.freedesktop.Java.OpenJDK",
-      "version": "21"
-    },
-    {
       "name": "mekhq",
       "buildsystem": "simple",
       "build-commands": [
-        "cp -r /app/sources/mekhq-0.50.12/data /app/mekhq/",
-        "cp -r /app/sources/mekhq-0.50.12/docs /app/mekhq/",
-        "cp -r /app/sources/mekhq-0.50.12/lib /app/mekhq/",
-        "cp -r /app/sources/mekhq-0.50.12/logs /app/mekhq/",
-        "cp -r /app/sources/mekhq-0.50.12/mmconf /app/mekhq/",
+        "curl -L -o mekhq.tar.gz https://github.com/MegaMek/megamek/releases/download/v0.50.12/mekhq-0.50.12.tar.gz",
+        "tar -xzf mekhq.tar.gz",
+        "cp -r mehq-0.50.12/data mehq/",
+        "cp -r mehq-0.50.12/docs mehq/",
+        "cp -r mehq-0.50.12/lib mehq/",
+        "cp -r mehq-0.50.12/logs mehq/",
+        "cp -r mehq-0.50.12/mmconf mehq/",
         "install -Dm755 /app/sources/mekhq-wrapper.sh /app/bin/mekhq",
         "install -Dm644 /app/sources/mekhq.png /app/share/icons/hicolor/256x256/apps/com.megamek.mekhq.png",
         "install -Dm644 /app/sources/com.megamek.mekhq.desktop /app/share/applications/com.megamek.mekhq.desktop"
