@@ -43,10 +43,6 @@ jobs:
           URL="https://github.com/MegaMek/mekhq/releases/download/v${VERSION}/MekHQ-${VERSION}.tar.gz"
           curl -L -o mekhq.tar.gz "$URL"
 
-      - name: Verify tarball
-        run: |
-          tar -tzf mekhq.tar.gz | head -10
-
       - name: Build Flatpak
         uses: flatpak/flatpak-github-actions/flatpak-builder@v6
         with:
