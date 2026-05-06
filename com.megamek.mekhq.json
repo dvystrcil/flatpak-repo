@@ -20,22 +20,14 @@
       "version": "21"
     },
     {
-      "name": "mekhq-download",
-      "buildsystem": "simple",
-      "build-commands": [
-        "curl -L -o /app/mekhq/mekhq-0.50.12.tar.gz https://github.com/MegaMek/mekhq/releases/download/v0.50.12/mekhq-0.50.12.tar.gz",
-        "tar -xzf /app/mekhq/mekhq-0.50.12.tar.gz -C /app/mekhq"
-      ]
-    },
-    {
       "name": "mekhq",
       "buildsystem": "simple",
       "build-commands": [
-        "cp -r /app/mekhq/mekhq-0.50.12/data /app/mekhq/",
-        "cp -r /app/mekhq/mekhq-0.50.12/docs /app/mekhq/",
-        "cp -r /app/mekhq/mekhq-0.50.12/lib /app/mekhq/",
-        "cp -r /app/mekhq/mekhq-0.50.12/logs /app/mekhq/",
-        "cp -r /app/mekhq/mekhq-0.50.12/mmconf /app/mekhq/",
+        "cp -r /app/sources/mekhq-0.50.12/data /app/mekhq/",
+        "cp -r /app/sources/mekhq-0.50.12/docs /app/mekhq/",
+        "cp -r /app/sources/mekhq-0.50.12/lib /app/mekhq/",
+        "cp -r /app/sources/mekhq-0.50.12/logs /app/mekhq/",
+        "cp -r /app/sources/mekhq-0.50.12/mmconf /app/mekhq/",
         "install -Dm755 /app/sources/mekhq-wrapper.sh /app/bin/mekhq",
         "install -Dm644 /app/sources/mekhq.png /app/share/icons/hicolor/256x256/apps/com.megamek.mekhq.png",
         "install -Dm644 /app/sources/com.megamek.mekhq.desktop /app/share/applications/com.megamek.mekhq.desktop"
