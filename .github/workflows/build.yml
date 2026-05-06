@@ -15,6 +15,11 @@ on:
         required: true
         default: '0.50.11'
 
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
 jobs:
   build:
     runs-on: flatpack-runner
@@ -41,16 +46,77 @@ jobs:
           bundle: mekhq.flatpak
           manifest-path: com.megamek.mekhq.json
           cache-key: mekhq-${{ github.sha }}
-        # run: |
-        #   flatpak-builder --user --force-clean build flatpak_app com.megamek.mekhq.json
+          repository-name: mekhq-repo
+          repository-url: https://dvystrcil.github.io/flatpack-repo/repo/
 
-      # - name: Bundle Flatpak
-      #   run: |
-      #     flatpak build-bundle repo mekhq.flatpak com.megamek.mekhq
+      - name: Generate .flatpakrepo file
+        run: |
+          cat > mekhq.flatpakrepo <<EOF
+          [Flatpak Repo]
+          Title=MekHQ Test Repo
+          Url=https://dvystrcil.github.io/flatpack-repo/repo/
+          Homepage=https://github.com/dvystrcil/flatpack-repo
+          Description=Self-hosted MekHQ Flatpak repository (testing)
+          DefaultBranch=master
+          EOF
 
-      - name: Upload artifact
+      - name: Prepare Pages directory
+        run: |
+          mkdir -p pages-deploy
+          cp -r repo pages-deploy/repo
+          cp mekhq.flatpakrepo pages-deploy/
+          cp mekhq.flatpak pages-deploy/
+          cat > pages-deploy/index.html <<'EOF'
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>MekHQ Flatpak Repository</title>
+            <style>
+              body { font-family: sans-serif; max-width: 700px; margin: 2em auto; padding: 0 1em; }
+              code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; }
+              pre { background: #f4f4f4; padding: 1em; border-radius: 5px; overflow-x: auto; }
+            </style>
+          </head>
+          <body>
+            <h1>MekHQ Flatpak Repository</h1>
+            <p>Self-hosted Flatpak distribution of MekHQ for testing.</p>
+
+            <h2>Install</h2>
+            <p>Add the remote and install:</p>
+            <pre>flatpak remote-add --user --if-not-exists mekhq-test https://dvystrcil.github.io/flatpack-repo/mekhq.flatpakrepo
+          flatpak install --user mekhq-test com.megamek.mekhq</pre>
+
+            <h2>Run</h2>
+            <pre>flatpak run com.megamek.mekhq</pre>
+
+            <h2>Update</h2>
+            <pre>flatpak update --user com.megamek.mekhq</pre>
+
+            <h2>Direct bundle download</h2>
+            <p>Or grab the standalone bundle: <a href="mekhq.flatpak">mekhq.flatpak</a></p>
+          </body>
+          </html>
+          EOF
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: pages-deploy
+
+      - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: mekhq-flatpak
           path: mekhq.flatpak
           retention-days: 5
+
+  deploy:
+    needs: build
+    runs-on: flatpack-runner
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

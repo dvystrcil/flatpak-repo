@@ -1,5 +1,8 @@
 #!/bin/bash
 # Wrapper script for MekHQ Flatpak
-# Uses OpenJDK 21 from org.freedesktop.Java.OpenJDK
+# Sets JAVA_HOME to the OpenJDK 21 extension and launches MekHQ
 
-exec "${JAVA_HOME}/bin/java" -jar /app/mekhq/MegaMek.jar "$@"
+export JAVA_HOME=/app/jre
+export PATH="${JAVA_HOME}/bin:${PATH}"
+
+exec /app/mekhq/bin/MekHQ "$@"

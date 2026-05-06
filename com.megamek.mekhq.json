@@ -3,7 +3,10 @@
   "runtime": "org.freedesktop.Platform",
   "runtime-version": "24.08",
   "sdk": "org.freedesktop.Sdk",
-  "command": "bin/mekhq",
+  "sdk-extensions": [
+    "org.freedesktop.Sdk.Extension.openjdk21"
+  ],
+  "command": "mekhq",
   "finish-args": [
     "--share=network",
     "--share=ipc",
@@ -15,35 +18,49 @@
   ],
   "modules": [
     {
+      "name": "openjdk",
+      "buildsystem": "simple",
+      "build-commands": [
+        "/usr/lib/sdk/openjdk21/install.sh"
+      ]
+    },
+    {
       "name": "mekhq",
       "buildsystem": "simple",
       "build-commands": [
-        "mkdir -p /app/bin /app/mekhq/data /app/mekhq/docs /app/mekhq/lib /app/mekhq/logs /app/mekhq/mmconf",
-        "cp -r /app/sources/mekhq/data/* /app/mekhq/data/",
-        "cp -r /app/sources/mekhq/docs/* /app/mekhq/docs/",
-        "cp -r /app/sources/mekhq/lib/* /app/mekhq/lib/",
-        "cp -r /app/sources/mekhq/logs/* /app/mekhq/logs/",
-        "cp -r /app/sources/mekhq/mmconf/* /app/mekhq/mmconf/",
-        "install -Dm755 /app/sources/mekhq-wrapper.sh /app/bin/mekhq",
-        "install -Dm644 /app/sources/mekhq.png /app/share/icons/hicolor/256x256/apps/com.megamek.mekhq.png",
-        "install -Dm644 /app/sources/com.megamek.mekhq.desktop /app/share/applications/com.megamek.mekhq.desktop"
+        "mkdir -p /app/bin /app/mekhq",
+        "cp -r sources/mekhq-extracted/* /app/mekhq/",
+        "rm -f /app/mekhq/*.exe",
+        "rm -f /app/mekhq/*.bat",
+        "rm -f /app/mekhq/*.l4j.ini",
+        "rm -f /app/mekhq/bin/*.bat",
+        "rm -f /app/mekhq/SubmitBug.html",
+        "chmod +x /app/mekhq/bin/MekHQ /app/mekhq/bin/MegaMek /app/mekhq/bin/MegaMekLab",
+        "chmod +x /app/mekhq/MekHQ.sh /app/mekhq/MegaMek.sh /app/mekhq/MegaMekLab.sh",
+        "install -Dm755 sources/mekhq-wrapper.sh /app/bin/mekhq",
+        "install -Dm644 sources/mekhq.png /app/share/icons/hicolor/256x256/apps/com.megamek.mekhq.png",
+        "install -Dm644 sources/com.megamek.mekhq.desktop /app/share/applications/com.megamek.mekhq.desktop"
       ],
       "sources": [
         {
           "type": "file",
-          "path": "mekhq-wrapper.sh"
+          "path": "mekhq-wrapper.sh",
+          "dest": "sources"
         },
         {
           "type": "file",
-          "path": "mekhq.png"
+          "path": "mekhq.png",
+          "dest": "sources"
         },
         {
           "type": "file",
-          "path": "com.megamek.mekhq.desktop"
+          "path": "com.megamek.mekhq.desktop",
+          "dest": "sources"
         },
         {
           "type": "archive",
-          "path": "mekhq.tar.gz"
+          "path": "mekhq.tar.gz",
+          "dest": "sources/mekhq-extracted"
         }
       ]
     }

@@ -2,9 +2,12 @@
 Version=1.0
 Type=Application
 Name=MekHQ
-Comment=BattleTech Tactical Combat Simulator
-Exec=flatpak run com.megamek.mekhq %U
+GenericName=BattleTech Campaign Manager
+Comment=Campaign manager for the BattleTech tabletop game
+Exec=mekhq %f
 Icon=com.megamek.mekhq
 Terminal=false
-Categories=Game;
+Categories=Game;StrategyGame;
 StartupNotify=true
+StartupWMClass=mekhq.MekHQ
+Keywords=BattleTech;MegaMek;mech;wargame;
