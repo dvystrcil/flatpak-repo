@@ -18,9 +18,9 @@
       "name": "mekhq",
       "buildsystem": "simple",
       "build-commands": [
+        "mkdir -p /app/bin /app/mekhq /app/share/icons/hicolor/256x256/apps /app/share/applications",
         "curl -L -o /tmp/mekhq.tar.gz https://github.com/MegaMek/megamek/releases/download/v0.50.12/mekhq-0.50.12.tar.gz",
         "tar -xzf /tmp/mekhq.tar.gz -C /tmp/",
-        "ls -la /tmp/mekhq-0.50.12/",
         "cp -r /tmp/mekhq-0.50.12/data /app/mekhq/",
         "cp -r /tmp/mekhq-0.50.12/docs /app/mekhq/",
         "cp -r /tmp/mekhq-0.50.12/lib /app/mekhq/",
