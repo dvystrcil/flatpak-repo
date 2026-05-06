@@ -27,9 +27,15 @@ jobs:
         run: |
           curl -L -o MekHQ-0.50.12.tar.gz https://github.com/MegaMek/mekhq/releases/download/v0.50.12/MekHQ-0.50.12.tar.gz
 
-      - name: Build Flatpak using Docker
+      - name: Build Flatpak
         run: |
           docker run --rm --privileged -v $(pwd):/work -w /work \
             -e HOME=/root \
-            ghcr.io/flatpak/flatpak-builder:latest \
+            --userns host \
+            flatpak/flatpak-builder:latest \
             flatpak-builder --user --force-clean build com.megamek.mekhq.json
+
+      - name: Export Flatpak
+        run: |
+          flatpak build-export --user flatpak-repo build
+          ls -la flatpak-repo
