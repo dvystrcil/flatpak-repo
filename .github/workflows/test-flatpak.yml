@@ -21,6 +21,7 @@ jobs:
         run: |
           flatpak --user remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
           flatpak --user install -y flathub org.freedesktop.Sdk/x86_64/23.08
+          flatpak --user install -y flathub org.freedesktop.Platform/x86_64/23.08
 
       - name: Test flatpak build
         run: |
