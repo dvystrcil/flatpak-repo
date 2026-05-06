@@ -24,11 +24,11 @@
       "buildsystem": "simple",
       "build-commands": [
         "mkdir -p /app/mekhq",
-        "tar -xzf /app/flatpak-app/mekhq-0.50.12.tar.gz -C /app/mekhq",
+        "tar -xzf /app/flatpak_app/mekhq-0.50.12.tar.gz -C /app/mekhq",
         "cp /app/mekhq/mekhq-0.50.12/MegaMek.jar /app/mekhq/",
-        "install -D /app/flatpak-app/mekhq-wrapper.sh /app/bin/mekhq",
-        "install -D /app/flatpak-app/mekhq.png /app/share/icons/hicolor/256x256/apps/com.megamek.mekhq.png",
-        "install -D /app/flatpak-app/com.megamek.mekhq.desktop /app/share/applications/com.megamek.mekhq.desktop"
+        "install -D /app/flatpak_app/mekhq-wrapper.sh /app/bin/mekhq",
+        "install -D /app/flatpak_app/mekhq.png /app/share/icons/hicolor/256x256/apps/com.megamek.mekhq.png",
+        "install -D /app/flatpak_app/com.megamek.mekhq.desktop /app/share/applications/com.megamek.mekhq.desktop"
       ],
       "sources": [
         {
