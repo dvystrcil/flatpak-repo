@@ -48,22 +48,6 @@ jobs:
           cp mekhq.png build/files/share/icons/hicolor/256x256/apps/com.megamek.mekhq.png
           cp com.megamek.mekhq.desktop build/files/share/applications/com.megamek.mekhq.desktop
 
-          cat > build/metadata << 'META'
-          [Application]
-          name=com.megamek.mekhq
-          runtime=org.freedesktop.Platform
-          runtime-version=23.08
-          sdk=org.freedesktop.Sdk
-          command=bin/mekhq
-
-          [Session Bus Policy]
-          talk=com.megamek.mekhq
-
-          [FileSystem]
-          share=home
-          share=xdg-download
-          META
-
       - name: Finish and Build Flatpak
         run: |
           mkdir -p flatpak-repo
