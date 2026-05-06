@@ -23,7 +23,7 @@ jobs:
 
       - name: Install flatpak-builder
         run: |
-          sudo apt-get update
+          sudo apt-get update -y
           sudo apt-get install -y flatpak flatpak-builder
 
       - name: Download MekHQ tarball
