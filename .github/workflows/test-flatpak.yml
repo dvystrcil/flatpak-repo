@@ -14,8 +14,6 @@ jobs:
           sudo add-apt-repository -y ppa:flatpak/stable
           sudo apt-get update
           sudo apt-get install -y flatpak flatpak-builder
-          flatpak --version
-          flatpak-builder --version
 
       - name: Setup flatpak runtime
         run: |
@@ -26,12 +24,77 @@ jobs:
       - name: Download MekHQ tarball
         run: |
           curl -L -o MekHQ-0.50.12.tar.gz https://github.com/MegaMek/mekhq/releases/download/v0.50.12/MekHQ-0.50.12.tar.gz
+          tar -xzf MekHQ-0.50.12.tar.gz
+
+      - name: Create Flatpak structure manually
+        run: |
+          mkdir -p flatpak-repo
+          mkdir -p build/files/bin
+          mkdir -p build/files/mekhq/{data,docs,lib,logs,mmconf}
+          mkdir -p build/files/share/icons/hicolor/256x256/apps
+          mkdir -p build/files/share/applications
+
+          cp -r MekHQ-0.50.12/data/* build/files/mekhq/data/
+          cp -r MekHQ-0.50.12/docs/* build/files/mekhq/docs/
+          cp -r MekHQ-0.50.12/lib/* build/files/mekhq/lib/
+          cp -r MekHQ-0.50.12/logs/* build/files/mekhq/logs/
+          cp -r MekHQ-0.50.12/mmconf/* build/files/mekhq/mmconf/
+
+          cp mekhq-wrapper.sh build/files/bin/mekhq
+          chmod +x build/files/bin/mekhq
+
+          cp mekhq.png build/files/share/icons/hicolor/256x256/apps/com.megamek.mekhq.png
+          cp com.megamek.mekhq.desktop build/files/share/applications/com.megamek.mekhq.desktop
+
+          cat > build/metadata << 'META'
+          [Application]
+          name=com.megamek.mekhq
+          runtime=org.freedesktop.Platform
+          runtime-version=23.08
+          sdk=org.freedesktop.Sdk
+          command=bin/mekhq
+
+          [Session Bus Policy]
+          talk=com.megamek.mekhq
+
+          [FileSystem]
+          share=home
+          share=xdg-download
+          META
+
+          cat > build/com.megamek.mekhq.json << 'MANIFEST'
+          {
+            "app-id": "com.megamek.mekhq",
+            "runtime": "org.freedesktop.Platform",
+            "runtime-version": "23.08",
+            "sdk": "org.freedesktop.Sdk",
+            "command": "bin/mekhq",
+            "finish-args": [
+              "--share=network",
+              "--share=ipc",
+              "--socket=fallback-x11",
+              "--socket=wayland",
+              "--device=dri",
+              "--filesystem=home",
+              "--filesystem=xdg-download"
+            ],
+            "modules": [
+              {
+                "name": "mekhq",
+                "buildsystem": "simple",
+                "build-commands": ["true"]
+              }
+            ]
+          }
+          MANIFEST
 
       - name: Build Flatpak
         run: |
-          flatpak-builder --user --force-clean --disable-rofiles-fuse build com.megamek.mekhq.json
-
-      - name: Export Flatpak
-        run: |
-          flatpak build-export --user flatpak-repo build
+          mkdir -p flatpak-repo
+          flatpak build-export flatpak-repo build
           ls -la flatpak-repo
+
+      - name: Install Flatpak
+        run: |
+          flatpak --user remote-add --no-gpg-verify test-repo flatpak-repo
+          flatpak --user install -y test-repo com.megamek.mekhq
