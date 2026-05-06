@@ -29,12 +29,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Cache MekHQ tarball
+        id: cache-tarball
+        uses: actions/cache@v4
+        with:
+          path: mekhq.tar.gz
+          key: mekhq-tarball-${{ github.event.inputs.version || '0.50.11' }}
+
       - name: Download MekHQ tarball
+        if: steps.cache-tarball.outputs.cache-hit != 'true'
         run: |
           VERSION="${{ github.event.inputs.version || '0.50.11' }}"
           URL="https://github.com/MegaMek/mekhq/releases/download/v${VERSION}/MekHQ-${VERSION}.tar.gz"
           curl -L -o mekhq.tar.gz "$URL"
-          echo "Downloaded $(ls -lh mekhq.tar.gz)"
 
       - name: Verify tarball
         run: |
@@ -45,9 +52,8 @@ jobs:
         with:
           bundle: mekhq.flatpak
           manifest-path: com.megamek.mekhq.json
-          cache-key: mekhq-${{ github.sha }}
+          cache-key: flatpak-builder-${{ hashFiles('com.megamek.mekhq.json', 'mekhq-wrapper.sh') }}
           repository-name: mekhq-repo
-          repository-url: https://dvystrcil.github.io/flatpack-repo/repo/
 
       - name: Generate .flatpakrepo file
         run: |
