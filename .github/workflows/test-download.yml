@@ -1,0 +1,35 @@
+name: Test Download MekHQ
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'MekHQ version (e.g., 0.50.11)'
+        required: true
+        default: '0.50.11'
+
+jobs:
+  download:
+    runs-on: arc-runner-docker-runner
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download MekHQ tarball
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          URL="https://github.com/MegaMek/mekhq/releases/download/v${VERSION}/MekHQ-${VERSION}.tar.gz"
+          echo "Downloading from: $URL"
+          curl -L -o mekhq.tar.gz "$URL"
+          echo "Downloaded $(ls -lh mekhq.tar.gz)"
+
+      - name: Verify tarball
+        run: |
+          sha256sum mekhq.tar.gz
+          tar -tzf mekhq.tar.gz | head -10
+
+      - name: Upload tarball artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mekhq-release
+          path: mekhq.tar.gz
+          retention-days: 1
