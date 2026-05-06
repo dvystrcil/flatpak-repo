@@ -88,5 +88,9 @@ jobs:
 
       - name: Build Flatpak
         run: |
-          mkdir -p flatpak-repo
-          flatpak build-from-dir --user flatpak-repo . com.megamek.mekhq
+          flatpak-builder --user --force-clean build com.megamek.mekhq.json
+
+      - name: Export Flatpak
+        run: |
+          flatpak build-export --user flatpak-repo build
+          ls -la flatpak-repo
