@@ -23,6 +23,10 @@ jobs:
           flatpak --user install -y flathub org.freedesktop.Sdk/x86_64/23.08
           flatpak --user install -y flathub org.freedesktop.Platform/x86_64/23.08
 
+      - name: Download MekHQ tarball
+        run: |
+          curl -L -o MekHQ-0.50.12.tar.gz https://github.com/MegaMek/mekhq/releases/download/v0.50.12/MekHQ-0.50.12.tar.gz
+
       - name: Build Flatpak
         run: |
           flatpak-builder --user --force-clean build com.megamek.mekhq.json
