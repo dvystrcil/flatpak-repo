@@ -25,20 +25,23 @@ jobs:
         run: |
           curl -L -o MekHQ-0.50.12.tar.gz https://github.com/MegaMek/mekhq/releases/download/v0.50.12/MekHQ-0.50.12.tar.gz
           tar -xzf MekHQ-0.50.12.tar.gz
+          ls -la MekHQ-0.50.12/
 
       - name: Create Flatpak structure manually
         run: |
-          mkdir -p flatpak-repo
+          mkdir -p /tmp/flatpak-export
           mkdir -p build/files/bin
-          mkdir -p build/files/mekhq/{data,docs,lib,logs,mmconf}
+          mkdir -p build/files/mekhq/data
+          mkdir -p build/files/mekhq/docs
+          mkdir -p build/files/mekhq/lib
+          mkdir -p build/files/mekhq/mmconf
           mkdir -p build/files/share/icons/hicolor/256x256/apps
           mkdir -p build/files/share/applications
 
-          cp -r MekHQ-0.50.12/data/* build/files/mekhq/data/
-          cp -r MekHQ-0.50.12/docs/* build/files/mekhq/docs/
-          cp -r MekHQ-0.50.12/lib/* build/files/mekhq/lib/
-          cp -r MekHQ-0.50.12/logs/* build/files/mekhq/logs/
-          cp -r MekHQ-0.50.12/mmconf/* build/files/mekhq/mmconf/
+          cp -r MekHQ-0.50.12/data/* build/files/mekhq/data/ || true
+          cp -r MekHQ-0.50.12/docs/* build/files/mekhq/docs/ || true
+          cp -r MekHQ-0.50.12/lib/* build/files/mekhq/lib/ || true
+          cp -r MekHQ-0.50.12/mmconf/* build/files/mekhq/mmconf/ || true
 
           cp mekhq-wrapper.sh build/files/bin/mekhq
           chmod +x build/files/bin/mekhq
