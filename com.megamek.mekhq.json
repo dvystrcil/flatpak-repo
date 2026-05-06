@@ -43,8 +43,7 @@
         },
         {
           "type": "archive",
-          "path": "MekHQ-0.50.12.tar.gz",
-          "dest": "MekHQ-0.50.12"
+          "path": "MekHQ-0.50.12.tar.gz"
         }
       ]
     }
