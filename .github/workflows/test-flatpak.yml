@@ -1,0 +1,17 @@
+name: Test Flatpak Installation
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: flatpack-runner
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install flatpak and check version
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y flatpak flatpak-builder
+          flatpak --version
+          flatpak-builder --version
