@@ -25,13 +25,14 @@ jobs:
         run: |
           curl -L -o MekHQ-0.50.12.tar.gz https://github.com/MegaMek/mekhq/releases/download/v0.50.12/MekHQ-0.50.12.tar.gz
 
-      - name: Check sysctl
-        run: |
-          cat /proc/sys/kernel/apparmor_restrict_unprivileged_userns
-
       - name: Build Flatpak
         run: |
           mkdir -p flatpak-repo
           flatpak-builder --user --force-clean build com.megamek.mekhq.json
           flatpak build-export flatpak-repo build
           ls -la flatpak-repo
+
+      - name: Check sysctl
+        run: |
+          echo "Note: kernel.apparmor_restrict_unprivileged_userns must be set to 0 on the host node"
+          cat /proc/sys/kernel/apparmor_restrict_unprivileged_userns || echo "Could not read sysctl"
