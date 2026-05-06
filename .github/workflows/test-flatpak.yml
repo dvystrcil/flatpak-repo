@@ -17,6 +17,10 @@ jobs:
           flatpak --version
           flatpak-builder --version
 
+      - name: Test SYS_ADMIN capability
+        run: |
+          grep -E "SysCap" /proc/1/status || cat /proc/self/status | grep Cap
+
       - name: Setup flatpak runtime
         run: |
           flatpak --user remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
