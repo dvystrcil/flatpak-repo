@@ -16,41 +16,44 @@
   "modules": [
     {
       "name": "openjdk-21",
-      "module": "org.freedesktop.Java.OpenJDK",
-      "version": "21"
+      "buildsystem": "simple",
+      "build-commands": [
+        "/usr/lib/sdk/openjdk21/install.sh"
+      ]
     },
     {
       "name": "mekhq",
       "buildsystem": "simple",
       "build-commands": [
-        "mkdir -p /app/mekhq",
-        "tar -xzf /app/flatpak_app/sources/mekhq-0.50.12.tar.gz -C /app/mekhq",
-        "cp /app/mekhq/mekhq-0.50.12/MegaMek.jar /app/mekhq/",
-        "install -D /app/flatpak_app/sources/mekhq-wrapper.sh /app/bin/mekhq",
-        "install -D /app/flatpak_app/sources/mekhq.png /app/share/icons/hicolor/256x256/apps/com.megamek.mekhq.png",
-        "install -D /app/flatpak_app/sources/com.megamek.mekhq.desktop /app/share/applications/com.megamek.mekhq.desktop"
+        "mkdir -p ${FLATPAK_DEST}/mekhq",
+        "tar -xzf /app/build-dir/mekhq-0.50.12.tar.gz -C ${FLATPAK_DEST}/mekhq",
+        "cp ${FLATPAK_DEST}/mekhq/mekhq-0.50.12/MegaMek.jar ${FLATPAK_DEST}/mekhq/",
+        "cp -r ${FLATPAK_DEST}/mekhq/mekhq-0.50.12/data ${FLATPAK_DEST}/mekhq/",
+        "cp -r ${FLATPAK_DEST}/mekhq/mekhq-0.50.12/docs ${FLATPAK_DEST}/mekhq/",
+        "cp -r ${FLATPAK_DEST}/mekhq/mekhq-0.50.12/lib ${FLATPAK_DEST}/mekhq/",
+        "cp -r ${FLATPAK_DEST}/mekhq/mekhq-0.50.12/logs ${FLATPAK_DEST}/mekhq/",
+        "cp -r ${FLATPAK_DEST}/mekhq/mekhq-0.50.12/mmconf ${FLATPAK_DEST}/mekhq/",
+        "install -Dm755 ${FLATPAK_DEST}/sources/mekhq-wrapper.sh ${FLATPAK_DEST}/bin/mekhq",
+        "install -Dm644 ${FLATPAK_DEST}/sources/mekhq.png ${FLATPAK_DEST}/share/icons/hicolor/256x256/apps/com.megamek.mekhq.png",
+        "install -Dm644 ${FLATPAK_DEST}/sources/com.megamek.mekhq.desktop ${FLATPAK_DEST}/share/applications/com.megamek.mekhq.desktop"
       ],
       "sources": [
         {
-          "type": "file",
+          "type": "archive",
           "url": "https://github.com/MegaMek/mekhq/releases/download/v0.50.12/mekhq-0.50.12.tar.gz",
-          "sha256": "55edcac0e1b7cf7246d3852f178b8c9f95c302d28fa4001aa2cfba6b9a1256cd",
-          "dest": "sources"
+          "sha256": "55edcac0e1b7cf7246d3852f178b8c9f95c302d28fa4001aa2cfba6b9a1256cd"
         },
         {
           "type": "file",
-          "path": "mekhq-wrapper.sh",
-          "dest": "sources"
+          "path": "mekhq-wrapper.sh"
         },
         {
           "type": "file",
-          "path": "mekhq.png",
-          "dest": "sources"
+          "path": "mekhq.png"
         },
         {
           "type": "file",
-          "path": "com.megamek.mekhq.desktop",
-          "dest": "sources"
+          "path": "com.megamek.mekhq.desktop"
         }
       ]
     }
