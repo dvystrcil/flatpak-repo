@@ -18,6 +18,9 @@ on:
 jobs:
   build:
     runs-on: flatpack-runner
+    container:
+      image: ghcr.io/flathub-infra/flatpak-github-actions:gnome-48
+      options: --privileged
     steps:
       - uses: actions/checkout@v4
 
@@ -33,12 +36,17 @@ jobs:
           tar -tzf mekhq.tar.gz | head -10
 
       - name: Build Flatpak
-        run: |
-          flatpak-builder --user --force-clean build flatpak_app com.megamek.mekhq.json
+        uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+        with:
+          bundle: mekhq.flatpak
+          manifest-path: com.megamek.mekhq.json
+          cache-key: mekhq-${{ github.sha }}
+        # run: |
+        #   flatpak-builder --user --force-clean build flatpak_app com.megamek.mekhq.json
 
-      - name: Bundle Flatpak
-        run: |
-          flatpak build-bundle repo mekhq.flatpak com.megamek.mekhq
+      # - name: Bundle Flatpak
+      #   run: |
+      #     flatpak build-bundle repo mekhq.flatpak com.megamek.mekhq
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
