@@ -22,9 +22,9 @@ jobs:
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
           bwrap --unshare-user --unshare-pid --bind / / true && echo "bwrap OK" || echo "bwrap failed"
 
-      - name: Test flatpak build
+      - name: Create test manifest
         run: |
-          flatpak-builder --user --force-clean test-build org.freedesktop.Sdk.json << 'MANIFEST'
+          cat > test-manifest.json << 'MANIFEST'
           {
             "app-id": "test.app",
             "runtime": "org.freedesktop.Sdk",
@@ -41,6 +41,10 @@ jobs:
             ]
           }
           MANIFEST
+
+      - name: Test flatpak build
+        run: |
+          flatpak-builder --user --force-clean test-build test-manifest.json
 
       - name: Verify build
         run: |
