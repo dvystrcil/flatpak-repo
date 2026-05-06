@@ -17,10 +17,10 @@ jobs:
           flatpak --version
           flatpak-builder --version
 
-      - name: Test bwrap
+      - name: Setup flatpak runtime
         run: |
-          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
-          bwrap --unshare-user --unshare-pid --bind / / true && echo "bwrap OK" || echo "bwrap failed"
+          flatpak --user remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+          flatpak --user install -y flathub org.freedesktop.Sdk/x86_64/23.08
 
       - name: Create test manifest
         run: |
