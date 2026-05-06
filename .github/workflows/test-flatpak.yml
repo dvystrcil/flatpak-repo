@@ -20,6 +20,7 @@ jobs:
           flatpak --user remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
           flatpak --user install -y flathub org.freedesktop.Sdk/x86_64/23.08
           flatpak --user install -y flathub org.freedesktop.Platform/x86_64/23.08
+          flatpak --user list
 
       - name: Download MekHQ tarball
         run: |
@@ -50,7 +51,7 @@ jobs:
       - name: Build Flatpak
         run: |
           mkdir -p flatpak-repo
-          flatpak build-init build com.megamek.mekhq org.freedesktop.Platform 23.08 org.freedesktop.Sdk
+          flatpak build-init build com.megamek.mekhq org.freedesktop.Platform org.freedesktop.Sdk
           flatpak build-finish build --socket=fallback-x11 --socket=wayland --device=dri --share=network --share=ipc --filesystem=home --filesystem=xdg-download
           flatpak build-export flatpak-repo build
           ls -la flatpak-repo
