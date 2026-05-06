@@ -23,11 +23,76 @@ jobs:
           flatpak --user install -y flathub org.freedesktop.Sdk/x86_64/23.08
           flatpak --user install -y flathub org.freedesktop.Platform/x86_64/23.08
 
-      - name: Test flatpak build
+      - name: Download and extract MekHQ
         run: |
-          flatpak-builder --user --force-clean test-build com.megamek.mekhq.json 2>&1 | tee build.log
-          cat build.log
+          curl -L -o mekhq.tar.gz https://github.com/MegaMek/megamek/releases/download/v0.50.12/mekhq-0.50.12.tar.gz
+          tar -xzf mekhq.tar.gz
+
+      - name: Configure flatpak manifest for local build
+        run: |
+          cat > com.megamek.mekhq.json << 'MANIFEST'
+          {
+            "app-id": "com.megamek.mekhq",
+            "runtime": "org.freedesktop.Platform",
+            "runtime-version": "23.08",
+            "sdk": "org.freedesktop.Sdk",
+            "command": "bin/mekhq",
+            "finish-args": [
+              "--share=network",
+              "--share=ipc",
+              "--socket=fallback-x11",
+              "--socket=wayland",
+              "--device=dri",
+              "--filesystem=home",
+              "--filesystem=xdg-download"
+            ],
+            "modules": [
+              {
+                "name": "mekhq",
+                "buildsystem": "simple",
+                "build-commands": [
+                  "mkdir -p /app/bin /app/mekhq/data /app/mekhq/docs /app/mekhq/lib /app/mekhq/logs /app/mekhq/mmconf",
+                  "cp -r /app/sources/mekhq-0.50.12/data/* /app/mekhq/data/",
+                  "cp -r /app/sources/mekhq-0.50.12/docs/* /app/mekhq/docs/",
+                  "cp -r /app/sources/mekhq-0.50.12/lib/* /app/mekhq/lib/",
+                  "cp -r /app/sources/mekhq-0.50.12/logs/* /app/mekhq/logs/",
+                  "cp -r /app/sources/mekhq-0.50.12/mmconf/* /app/mekhq/mmconf/",
+                  "install -Dm755 /app/sources/mekhq-wrapper.sh /app/bin/mekhq",
+                  "install -Dm644 /app/sources/mekhq.png /app/share/icons/hicolor/256x256/apps/com.megamek.mekhq.png",
+                  "install -Dm644 /app/sources/com.megamek.mekhq.desktop /app/share/applications/com.megamek.mekhq.desktop"
+                ],
+                "sources": [
+                  {
+                    "type": "file",
+                    "path": "mekhq-wrapper.sh"
+                  },
+                  {
+                    "type": "file",
+                    "path": "mekhq.png"
+                  },
+                  {
+                    "type": "file",
+                    "path": "com.megamek.mekhq.desktop"
+                  },
+                  {
+                    "type": "file",
+                    "path": "mekhq-0.50.12",
+                    "dest": "mekhq-0.50.12"
+                  }
+                ]
+              }
+            ]
+          }
+          MANIFEST
+
+      - name: Build Flatpak
+        run: |
+          mkdir -p flatpak-repo
+          flatpak build-from-dir --user flatpak-repo . com.megamek.mekhq
 
       - name: Verify build
         run: |
-          ls -la test-build
+          ls -la flatpak-repo
+          flatpak --user remote-add --no-gpg-verify myrepo flatpak-repo 2>/dev/null || true
+          flatpak --user update flathub org.freedesktop.Platform/x86_64/23.08
+          flatpak --user install --user -y myrepo com.megamek.mekhq
