@@ -20,11 +20,17 @@
       "version": "21"
     },
     {
+      "name": "mekhq-download",
+      "buildsystem": "simple",
+      "build-commands": [
+        "curl -L -o /app/mekhq/mekhq-0.50.12.tar.gz https://github.com/MegaMek/mekhq/releases/download/v0.50.12/mekhq-0.50.12.tar.gz",
+        "tar -xzf /app/mekhq/mekhq-0.50.12.tar.gz -C /app/mekhq"
+      ]
+    },
+    {
       "name": "mekhq",
       "buildsystem": "simple",
       "build-commands": [
-        "mkdir -p /app/mekhq",
-        "tar -xzf /app/sources/mekhq-0.50.12.tar.gz -C /app/mekhq",
         "cp -r /app/mekhq/mekhq-0.50.12/data /app/mekhq/",
         "cp -r /app/mekhq/mekhq-0.50.12/docs /app/mekhq/",
         "cp -r /app/mekhq/mekhq-0.50.12/lib /app/mekhq/",
@@ -35,11 +41,6 @@
         "install -Dm644 /app/sources/com.megamek.mekhq.desktop /app/share/applications/com.megamek.mekhq.desktop"
       ],
       "sources": [
-        {
-          "type": "archive",
-          "url": "https://github.com/MegaMek/mekhq/releases/download/v0.50.12/mekhq-0.50.12.tar.gz",
-          "sha256": "55edcac0e1b7cf7246d3852f178b8c9f95c302d28fa4001aa2cfba6b9a1256cd"
-        },
         {
           "type": "file",
           "path": "mekhq-wrapper.sh"
