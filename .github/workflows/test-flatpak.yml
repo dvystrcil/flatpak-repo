@@ -29,11 +29,7 @@ jobs:
 
       - name: Build Flatpak
         run: |
-          docker run --rm --privileged -v $(pwd):/work -w /work \
-            -e HOME=/root \
-            --userns host \
-            flatpak/flatpak-builder:latest \
-            flatpak-builder --user --force-clean build com.megamek.mekhq.json
+          flatpak-builder --user --force-clean --disable-rofiles-fuse build com.megamek.mekhq.json
 
       - name: Export Flatpak
         run: |
