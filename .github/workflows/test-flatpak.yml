@@ -50,7 +50,7 @@ jobs:
       - name: Build Flatpak
         run: |
           mkdir -p flatpak-repo
-          flatpak build-init build com.megamek.mekhq org.freedesktop.Platform 23.08 org.freedesktop.Sdk
+          flatpak build-init build com.megamek.mekhq org.freedesktop.Platform 23.08 org.freedesktop.Sdk/23.08
           flatpak build-finish build --socket=fallback-x11 --socket=wayland --device=dri --share=network --share=ipc --filesystem=home --filesystem=xdg-download
           flatpak build-export flatpak-repo build
           ls -la flatpak-repo
