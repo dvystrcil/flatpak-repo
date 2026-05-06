@@ -10,7 +10,7 @@ on:
 
 jobs:
   download:
-    runs-on: open-terminal-docker-runner
+    runs-on: flatpack-runner
     steps:
       - uses: actions/checkout@v4
 
