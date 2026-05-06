@@ -22,29 +22,9 @@ jobs:
           flatpak --user remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
           flatpak --user install -y flathub org.freedesktop.Sdk/x86_64/23.08
 
-      - name: Create test manifest
-        run: |
-          cat > test-manifest.json << 'MANIFEST'
-          {
-            "app-id": "test.app",
-            "runtime": "org.freedesktop.Sdk",
-            "runtime-version": "23.08",
-            "sdk": "org.freedesktop.Sdk",
-            "command": "echo",
-            "finish-args": ["--share=network"],
-            "modules": [
-              {
-                "name": "test",
-                "buildsystem": "simple",
-                "build-commands": ["echo 'Hello from flatpak!'"]
-              }
-            ]
-          }
-          MANIFEST
-
       - name: Test flatpak build
         run: |
-          flatpak-builder --user --force-clean test-build test-manifest.json
+          flatpak-builder --user --force-clean test-build com.megamek.mekhq.json
 
       - name: Verify build
         run: |
