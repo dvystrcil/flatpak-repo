@@ -1,4 +1,4 @@
-githubConfigUrl: "https://github.com/dvystrcil/flatpack-repo"
-runnerScaleSetName: "flatpack-runner"
+githubConfigUrl: "https://github.com/dvystrcil/flatpak-repo"
+runnerScaleSetName: "flatpak-runner"
 minRunners: 0
 maxRunners: 3

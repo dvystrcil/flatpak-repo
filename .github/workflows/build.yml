@@ -22,7 +22,7 @@ permissions:
 
 jobs:
   build:
-    runs-on: flatpack-runner
+    runs-on: flatpak-runner
     container:
       image: ghcr.io/flathub-infra/flatpak-github-actions:gnome-48
       options: --privileged
@@ -55,8 +55,8 @@ jobs:
           cat > mekhq.flatpakrepo <<EOF
           [Flatpak Repo]
           Title=MekHQ Test Repo
-          Url=https://dvystrcil.github.io/flatpack-repo/repo/
-          Homepage=https://github.com/dvystrcil/flatpack-repo
+          Url=https://dvystrcil.github.io/flatpak-repo/repo/
+          Homepage=https://github.com/dvystrcil/flatpak-repo
           Description=Self-hosted MekHQ Flatpak repository (testing)
           DefaultBranch=master
           EOF
@@ -84,7 +84,7 @@ jobs:
 
             <h2>Install</h2>
             <p>Add the remote and install:</p>
-            <pre>flatpak remote-add --user --if-not-exists mekhq-test https://dvystrcil.github.io/flatpack-repo/mekhq.flatpakrepo
+            <pre>flatpak remote-add --user --if-not-exists mekhq-test https://dvystrcil.github.io/flatpak-repo/mekhq.flatpakrepo
           flatpak install --user mekhq-test com.megamek.mekhq</pre>
 
             <h2>Run</h2>
@@ -113,7 +113,7 @@ jobs:
 
   deploy:
     needs: build
-    runs-on: flatpack-runner
+    runs-on: flatpak-runner
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
