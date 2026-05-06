@@ -9,26 +9,37 @@ on:
       - '**.png'
       - '**.desktop'
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'MekHQ version (e.g., 0.50.11)'
+        required: true
+        default: '0.50.11'
 
 jobs:
-  build-mekhq:
-    name: Build MekHQ Flatpak
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/flathub-infra/flatpak-github-actions:gnome-48
-      options: --privileged
+  build:
+    runs-on: flatpack-runner
     steps:
       - uses: actions/checkout@v4
-      
+
+      - name: Download MekHQ tarball
+        run: |
+          VERSION="${{ github.event.inputs.version || '0.50.11' }}"
+          URL="https://github.com/MegaMek/mekhq/releases/download/v${VERSION}/MekHQ-${VERSION}.tar.gz"
+          curl -L -o mekhq.tar.gz "$URL"
+          echo "Downloaded $(ls -lh mekhq.tar.gz)"
+
+      - name: Verify tarball
+        run: |
+          tar -tzf mekhq.tar.gz | head -10
+
       - name: Build Flatpak
-        uses: dvystrcil/flatpak-github-actions/flatpak-builder@master
-        with:
-          bundle: mekhq.flatpak
-          manifest-path: com.megamek.mekhq.json
-          cache-key: flatpak-builder-${{ github.sha }}
-          repository-url: https://flathub.org/repo/flathub.flatpakrepo
-          upload-artifact: false
-      
+        run: |
+          flatpak-builder --user --force-clean build flatpak_app com.megamek.mekhq.json
+
+      - name: Bundle Flatpak
+        run: |
+          flatpak build-bundle repo mekhq.flatpak com.megamek.mekhq
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
