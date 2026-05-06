@@ -1,0 +1,23 @@
+name: Test Flatpak Setup
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: flatpack-runner
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install flatpak from PPA
+        run: |
+          sudo add-apt-repository -y ppa:flatpak/stable
+          sudo apt-get update
+          sudo apt-get install -y flatpak flatpak-builder
+          flatpak --version
+          flatpak-builder --version
+
+      - name: Test bwrap
+        run: |
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+          bwrap --unshare-user --unshare-pid --bind / / true && echo OK || echo "bwrap failed"
