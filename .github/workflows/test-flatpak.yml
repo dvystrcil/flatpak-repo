@@ -29,7 +29,6 @@ jobs:
 
       - name: Create Flatpak structure manually
         run: |
-          mkdir -p /tmp/flatpak-export
           mkdir -p build/files/bin
           mkdir -p build/files/mekhq/data
           mkdir -p build/files/mekhq/docs
@@ -65,39 +64,14 @@ jobs:
           share=xdg-download
           META
 
-          cat > build/com.megamek.mekhq.json << 'MANIFEST'
-          {
-            "app-id": "com.megamek.mekhq",
-            "runtime": "org.freedesktop.Platform",
-            "runtime-version": "23.08",
-            "sdk": "org.freedesktop.Sdk",
-            "command": "bin/mekhq",
-            "finish-args": [
-              "--share=network",
-              "--share=ipc",
-              "--socket=fallback-x11",
-              "--socket=wayland",
-              "--device=dri",
-              "--filesystem=home",
-              "--filesystem=xdg-download"
-            ],
-            "modules": [
-              {
-                "name": "mekhq",
-                "buildsystem": "simple",
-                "build-commands": ["true"]
-              }
-            ]
-          }
-          MANIFEST
-
-      - name: Build Flatpak
+      - name: Finish and Build Flatpak
         run: |
           mkdir -p flatpak-repo
+          flatpak build-finish build --socket=fallback-x11 --socket=wayland --device=dri --share=network --share=ipc --filesystem=home --filesystem=xdg-download
           flatpak build-export flatpak-repo build
           ls -la flatpak-repo
 
       - name: Install Flatpak
         run: |
           flatpak --user remote-add --no-gpg-verify test-repo flatpak-repo
-          flatpak --user install -y test-repo com.megamek.mekhq
+          flatpak --user update -y test-repo com.megamek.mekhq
