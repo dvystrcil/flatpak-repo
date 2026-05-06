@@ -25,9 +25,9 @@ jobs:
         run: |
           curl -L -o MekHQ-0.50.12.tar.gz https://github.com/MegaMek/mekhq/releases/download/v0.50.12/MekHQ-0.50.12.tar.gz
 
-      - name: Test bwrap
+      - name: Check sysctl
         run: |
-          bwrap --unshare-user --unshare-pid --bind / / true && echo "bwrap OK" || echo "bwrap failed"
+          cat /proc/sys/kernel/apparmor_restrict_unprivileged_userns
 
       - name: Build Flatpak
         run: |
