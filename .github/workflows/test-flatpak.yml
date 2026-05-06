@@ -29,9 +29,4 @@ jobs:
 
       - name: Build Flatpak
         run: |
-          flatpak-builder --user --force-clean build com.megamek.mekhq.json
-
-      - name: Export Flatpak
-        run: |
-          flatpak build-export --user flatpak-repo build
-          ls -la flatpak-repo
+          flatpak-builder --user --force-clean --build-finished=print build com.megamek.mekhq.json
