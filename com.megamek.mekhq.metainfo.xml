@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.megamek.mekhq</id>
+
+  <name>MekHQ</name>
+  <summary>Campaign manager for the BattleTech tabletop game</summary>
+
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-2.0-or-later</project_license>
+
+  <description>
+    <p>
+      MekHQ is a campaign manager for MegaMek, allowing players to track
+      their BattleTech mercenary or military units across multiple battles
+      and campaigns. It handles personnel, finances, contracts, repairs,
+      unit logistics, and integrates with MegaMek for tactical combat
+      resolution.
+    </p>
+  </description>
+
+  <launchable type="desktop-id">com.megamek.mekhq.desktop</launchable>
+
+  <url type="homepage">https://megamek.org/</url>
+  <url type="bugtracker">https://github.com/MegaMek/mekhq/issues</url>
+
+  <screenshots>
+    <screenshot type="default">
+      <image>https://example.com/path/to/screenshot.png</image>
+      <caption>MekHQ campaign overview</caption>
+    </screenshot>
+  </screenshots>
+
+  <releases>
+    <release version="0.50.11" date="2025-01-15"/>
+  </releases>
+
+  <developer id="org.megamek">
+    <name>The MegaMek Team</name>
+  </developer>
+
+  <content_rating type="oars-1.1"/>
+</component>
