@@ -20,6 +20,7 @@
       "build-commands": [
         "curl -L -o mekhq.tar.gz https://github.com/MegaMek/megamek/releases/download/v0.50.12/mekhq-0.50.12.tar.gz",
         "tar -xzf mekhq.tar.gz",
+        "ls -la",
         "cp -r mehq-0.50.12/data mehq/",
         "cp -r mehq-0.50.12/docs mehq/",
         "cp -r mehq-0.50.12/lib mehq/",
