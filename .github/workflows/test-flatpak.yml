@@ -25,7 +25,6 @@ jobs:
         run: |
           curl -L -o MekHQ-0.50.12.tar.gz https://github.com/MegaMek/mekhq/releases/download/v0.50.12/MekHQ-0.50.12.tar.gz
           tar -xzf MekHQ-0.50.12.tar.gz
-          ls -la MekHQ-0.50.12/
 
       - name: Create Flatpak structure manually
         run: |
@@ -48,9 +47,10 @@ jobs:
           cp mekhq.png build/files/share/icons/hicolor/256x256/apps/com.megamek.mekhq.png
           cp com.megamek.mekhq.desktop build/files/share/applications/com.megamek.mekhq.desktop
 
-      - name: Finish and Build Flatpak
+      - name: Build Flatpak
         run: |
           mkdir -p flatpak-repo
+          flatpak build-init build com.megamek.mekhq org.freedesktop.Platform 23.08 org.freedesktop.Sdk
           flatpak build-finish build --socket=fallback-x11 --socket=wayland --device=dri --share=network --share=ipc --filesystem=home --filesystem=xdg-download
           flatpak build-export flatpak-repo build
           ls -la flatpak-repo
