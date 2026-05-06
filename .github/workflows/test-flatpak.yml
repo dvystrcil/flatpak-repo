@@ -17,10 +17,6 @@ jobs:
           flatpak --version
           flatpak-builder --version
 
-      - name: Test SYS_ADMIN capability
-        run: |
-          grep -E "SysCap" /proc/1/status || cat /proc/self/status | grep Cap
-
       - name: Setup flatpak runtime
         run: |
           flatpak --user remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
@@ -31,11 +27,9 @@ jobs:
         run: |
           curl -L -o MekHQ-0.50.12.tar.gz https://github.com/MegaMek/mekhq/releases/download/v0.50.12/MekHQ-0.50.12.tar.gz
 
-      - name: Build Flatpak
+      - name: Build Flatpak using Docker
         run: |
-          flatpak-builder --user --force-clean build com.megamek.mekhq.json
-
-      - name: Export Flatpak
-        run: |
-          flatpak build-export --user flatpak-repo build
-          ls -la flatpak-repo
+          docker run --rm --privileged -v $(pwd):/work -w /work \
+            -e HOME=/root \
+            ghcr.io/flatpak/flatpak-builder:latest \
+            flatpak-builder --user --force-clean build com.megamek.mekhq.json
