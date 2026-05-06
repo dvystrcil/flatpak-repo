@@ -1,4 +1,4 @@
-name: Test Flatpak Setup
+name: Test Flatpak Setup and Build
 
 on:
   workflow_dispatch:
@@ -20,4 +20,28 @@ jobs:
       - name: Test bwrap
         run: |
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
-          bwrap --unshare-user --unshare-pid --bind / / true && echo OK || echo "bwrap failed"
+          bwrap --unshare-user --unshare-pid --bind / / true && echo "bwrap OK" || echo "bwrap failed"
+
+      - name: Test flatpak build
+        run: |
+          flatpak-builder --user --force-clean test-build org.freedesktop.Sdk.json << 'MANIFEST'
+          {
+            "app-id": "test.app",
+            "runtime": "org.freedesktop.Sdk",
+            "runtime-version": "23.08",
+            "sdk": "org.freedesktop.Sdk",
+            "command": "echo",
+            "finish-args": ["--share=network"],
+            "modules": [
+              {
+                "name": "test",
+                "buildsystem": "simple",
+                "build-commands": ["echo 'Hello from flatpak!'"]
+              }
+            ]
+          }
+          MANIFEST
+
+      - name: Verify build
+        run: |
+          ls -la test-build
