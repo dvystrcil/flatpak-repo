@@ -10,7 +10,7 @@ on:
 
 jobs:
   download:
-    runs-on: arc-runner-docker-runner
+    runs-on: open-terminal-docker-runner
     steps:
       - uses: actions/checkout@v4
 
