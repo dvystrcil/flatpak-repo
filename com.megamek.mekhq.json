@@ -34,19 +34,23 @@
         {
           "type": "file",
           "url": "https://github.com/MegaMek/mekhq/releases/download/v0.50.12/mekhq-0.50.12.tar.gz",
-          "sha256": "55edcac0e1b7cf7246d3852f178b8c9f95c302d28fa4001aa2cfba6b9a1256cd"
+          "sha256": "55edcac0e1b7cf7246d3852f178b8c9f95c302d28fa4001aa2cfba6b9a1256cd",
+          "dest": "sources"
         },
         {
           "type": "file",
-          "path": "mekhq-wrapper.sh"
+          "path": "mekhq-wrapper.sh",
+          "dest": "sources"
         },
         {
           "type": "file",
-          "path": "mekhq.png"
+          "path": "mekhq.png",
+          "dest": "sources"
         },
         {
           "type": "file",
-          "path": "com.megamek.mekhq.desktop"
+          "path": "com.megamek.mekhq.desktop",
+          "dest": "sources"
         }
       ]
     }
