@@ -20,7 +20,6 @@ jobs:
           flatpak --user remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
           flatpak --user install -y flathub org.freedesktop.Sdk/x86_64/23.08
           flatpak --user install -y flathub org.freedesktop.Platform/x86_64/23.08
-          flatpak --user list
 
       - name: Download MekHQ tarball
         run: |
@@ -29,6 +28,7 @@ jobs:
 
       - name: Create Flatpak structure manually
         run: |
+          rm -rf build flatpak-repo
           mkdir -p build/files/bin
           mkdir -p build/files/mekhq/data
           mkdir -p build/files/mekhq/docs
