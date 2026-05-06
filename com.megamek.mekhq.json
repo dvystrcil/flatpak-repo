@@ -16,10 +16,8 @@
   "modules": [
     {
       "name": "openjdk-21",
-      "buildsystem": "simple",
-      "build-commands": [
-        "/usr/lib/sdk/openjdk21/install.sh"
-      ]
+      "module": "org.freedesktop.Java.OpenJDK",
+      "version": "21"
     },
     {
       "name": "mekhq",
