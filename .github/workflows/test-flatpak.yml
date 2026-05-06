@@ -24,34 +24,10 @@ jobs:
       - name: Download MekHQ tarball
         run: |
           curl -L -o MekHQ-0.50.12.tar.gz https://github.com/MegaMek/mekhq/releases/download/v0.50.12/MekHQ-0.50.12.tar.gz
-          tar -xzf MekHQ-0.50.12.tar.gz
-
-      - name: Create Flatpak structure manually
-        run: |
-          rm -rf /tmp/build /tmp/flatpak-repo
-          mkdir -p /tmp/build/files/bin
-          mkdir -p /tmp/build/files/mekhq/data
-          mkdir -p /tmp/build/files/mekhq/docs
-          mkdir -p /tmp/build/files/mekhq/lib
-          mkdir -p /tmp/build/files/mekhq/mmconf
-          mkdir -p /tmp/build/files/share/icons/hicolor/256x256/apps
-          mkdir -p /tmp/build/files/share/applications
-
-          cp -r MekHQ-0.50.12/data/* /tmp/build/files/mekhq/data/ || true
-          cp -r MekHQ-0.50.12/docs/* /tmp/build/files/mekhq/docs/ || true
-          cp -r MekHQ-0.50.12/lib/* /tmp/build/files/mekhq/lib/ || true
-          cp -r MekHQ-0.50.12/mmconf/* /tmp/build/files/mekhq/mmconf/ || true
-
-          cp mekhq-wrapper.sh /tmp/build/files/bin/mekhq
-          chmod +x /tmp/build/files/bin/mekhq
-
-          cp mekhq.png /tmp/build/files/share/icons/hicolor/256x256/apps/com.megamek.mekhq.png
-          cp com.megamek.mekhq.desktop /tmp/build/files/share/applications/com.megamek.mekhq.desktop
 
       - name: Build Flatpak
         run: |
           mkdir -p /tmp/flatpak-repo
-          flatpak build-init /tmp/build com.megamek.mekhq org.freedesktop.Platform org.freedesktop.Sdk
-          flatpak build-finish /tmp/build --socket=fallback-x11 --socket=wayland --device=dri --share=network --share=ipc --filesystem=home --filesystem=xdg-download
+          flatpak-builder --user --force-clean --disable-rofiles-fuse /tmp/build com.megamek.mekhq.json
           flatpak build-export /tmp/flatpak-repo /tmp/build
           ls -la /tmp/flatpak-repo
