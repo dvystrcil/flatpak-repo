@@ -25,9 +25,13 @@ jobs:
         run: |
           curl -L -o MekHQ-0.50.12.tar.gz https://github.com/MegaMek/mekhq/releases/download/v0.50.12/MekHQ-0.50.12.tar.gz
 
+      - name: Test bwrap
+        run: |
+          bwrap --unshare-user --unshare-pid --bind / / true && echo "bwrap OK" || echo "bwrap failed"
+
       - name: Build Flatpak
         run: |
           mkdir -p flatpak-repo
-          flatpak-builder --user --force-clean --disable-rofiles-fuse build com.megamek.mekhq.json
+          flatpak-builder --user --force-clean build com.megamek.mekhq.json
           flatpak build-export flatpak-repo build
           ls -la flatpak-repo
