@@ -14,7 +14,8 @@
     "--socket=wayland",
     "--device=dri",
     "--filesystem=home",
-    "--filesystem=xdg-download"
+    "--filesystem=xdg-download",
+    "--filesystem=/app"
   ],
   "modules": [
     {
