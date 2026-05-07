@@ -5,6 +5,7 @@
 export JAVA_HOME=/app/jre
 export PATH="${JAVA_HOME}/bin:${PATH}"
 
-# Note: log paths are hardcoded in log4j2.xml to /home/dan/.local/share/mekhq/logs
+# Ensure logs directory exists
+mkdir -p /home/dan/.local/share/mekhq/logs
 
-exec /app/mekhq/bin/MekHQ "$@"
+exec /app/mekhq/bin/MekHQ -Dlog4j.configurationFile=/app/mekhq/mmconf/log4j2.xml "$@"
