@@ -8,10 +8,11 @@ on:
       - '**.sh'
       - '**.png'
       - '**.desktop'
+      - '**.html'
   workflow_dispatch:
     inputs:
       version:
-        description: 'MekHQ version (e.g., 0.50.11)'
+        description: 'MekHQ version (without v prefix, e.g. 0.50.11)'
         required: true
         default: '0.50.11'
 
@@ -22,31 +23,43 @@ permissions:
 
 jobs:
   build:
-    runs-on: flatpak-runner
+    runs-on: flatpak-repo-runner
     container:
       image: ghcr.io/flathub-infra/flatpak-github-actions:gnome-48
       options: --privileged
     steps:
       - uses: actions/checkout@v4
 
+      - name: Set version
+        id: version
+        run: |
+          VERSION="${{ github.event.inputs.version || '0.50.11' }}"
+          # Strip leading 'v' if someone included it
+          VERSION="${VERSION#v}"
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "version_tag=v${VERSION}" >> $GITHUB_OUTPUT
+          echo "Building MekHQ v${VERSION}"
+
       - name: Cache MekHQ tarball
         id: cache-tarball
         uses: actions/cache@v4
         with:
           path: mekhq.tar.gz
-          key: mekhq-tarball-${{ github.event.inputs.version || '0.50.11' }}
+          key: mekhq-tarball-${{ steps.version.outputs.version }}
 
       - name: Download MekHQ tarball
         if: steps.cache-tarball.outputs.cache-hit != 'true'
         run: |
-          VERSION="${{ github.event.inputs.version || '0.50.11' }}"
+          VERSION="${{ steps.version.outputs.version }}"
           URL="https://github.com/MegaMek/mekhq/releases/download/v${VERSION}/MekHQ-${VERSION}.tar.gz"
+          echo "Downloading from $URL"
           curl -L -o mekhq.tar.gz "$URL"
+          ls -lh mekhq.tar.gz
 
       - name: Build Flatpak
         uses: flatpak/flatpak-github-actions/flatpak-builder@v6
         with:
-          bundle: mekhq.flatpak
+          bundle: mekhq-${{ steps.version.outputs.version_tag }}.flatpak
           manifest-path: com.megamek.mekhq.json
           cache-key: flatpak-builder-${{ hashFiles('com.megamek.mekhq.json', 'mekhq-wrapper.sh') }}
 
@@ -54,7 +67,7 @@ jobs:
         run: |
           cat > mekhq.flatpakrepo <<EOF
           [Flatpak Repo]
-          Title=MekHQ Test Repo
+          Title=MekHQ Flatpak Repository
           Url=https://dvystrcil.github.io/flatpak-repo/repo/
           Homepage=https://github.com/dvystrcil/flatpak-repo
           Description=Self-hosted MekHQ Flatpak repository (testing)
@@ -63,41 +76,25 @@ jobs:
 
       - name: Prepare Pages directory
         run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          VERSION_TAG="${{ steps.version.outputs.version_tag }}"
+          BUNDLE_NAME="mekhq-${VERSION_TAG}.flatpak"
+
           mkdir -p pages-deploy
           cp -r repo pages-deploy/repo
           cp mekhq.flatpakrepo pages-deploy/
-          cp mekhq.flatpak pages-deploy/
-          cat > pages-deploy/index.html <<'EOF'
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <title>MekHQ Flatpak Repository</title>
-            <style>
-              body { font-family: sans-serif; max-width: 700px; margin: 2em auto; padding: 0 1em; }
-              code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; }
-              pre { background: #f4f4f4; padding: 1em; border-radius: 5px; overflow-x: auto; }
-            </style>
-          </head>
-          <body>
-            <h1>MekHQ Flatpak Repository</h1>
-            <p>Self-hosted Flatpak distribution of MekHQ for testing.</p>
+          cp "${BUNDLE_NAME}" pages-deploy/
 
-            <h2>Install</h2>
-            <p>Add the remote and install:</p>
-            <pre>flatpak remote-add --user --if-not-exists mekhq-test https://dvystrcil.github.io/flatpak-repo/mekhq.flatpakrepo
-          flatpak install --user mekhq-test com.megamek.mekhq</pre>
+          # Stable "latest" filename for predictable URL
+          cp "${BUNDLE_NAME}" "pages-deploy/mekhq-latest.flatpak"
 
-            <h2>Run</h2>
-            <pre>flatpak run com.megamek.mekhq</pre>
+          # Substitute version placeholders in the index.html
+          sed -e "s|__VERSION__|${VERSION}|g" \
+              -e "s|__VERSION_TAG__|${VERSION_TAG}|g" \
+              -e "s|__BUNDLE_NAME__|${BUNDLE_NAME}|g" \
+              index.html > pages-deploy/index.html
 
-            <h2>Update</h2>
-            <pre>flatpak update --user com.megamek.mekhq</pre>
-
-            <h2>Direct bundle download</h2>
-            <p>Or grab the standalone bundle: <a href="mekhq.flatpak">mekhq.flatpak</a></p>
-          </body>
-          </html>
-          EOF
+          ls -la pages-deploy/
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
@@ -107,13 +104,13 @@ jobs:
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: mekhq-flatpak
-          path: mekhq.flatpak
+          name: mekhq-flatpak-${{ steps.version.outputs.version_tag }}
+          path: mekhq-${{ steps.version.outputs.version_tag }}.flatpak
           retention-days: 5
 
   deploy:
     needs: build
-    runs-on: flatpak-runner
+    runs-on: flatpak-repo-runner
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
