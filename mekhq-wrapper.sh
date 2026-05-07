@@ -10,13 +10,13 @@ DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
 MEKHQ_DATA="$DATA_HOME/mekhq"
 mkdir -p "$MEKHQ_DATA/logs"
 
-# Symlink logs directory to writable location
-if [ ! -L "$MEKHQ_DATA/logs" ]; then
-  rm -rf "$MEKHQ_DATA/logs"
-fi
-ln -sf "$MEKHQ_DATA/logs" /app/mekhq/logs
-
-# Change to MekHQ directory so relative paths work correctly
+# Change to MekHQ directory first so absolute paths work
 cd /app/mekhq
+
+# Create symlink from /app/mekhq/logs to user's writable logs directory
+rm -rf logs
+ln -sf "$MEKHQ_DATA/logs" logs
+
+# Note: logs is now a symlink to $MEKHQ_DATA/logs
 
 exec /app/mekhq/bin/MekHQ "$@"
