@@ -40,6 +40,17 @@ jobs:
           echo "version_tag=v${VERSION}" >> $GITHUB_OUTPUT
           echo "Building MekHQ v${VERSION}"
 
+      - name: Fetch secrets from Infisical
+        uses: Infisical/secrets-action@v1.0.16
+        with:
+          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
+          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+          env-slug: prod
+          project-slug: homelab-bz-gt
+          secret-path: /
+          export-type: env
+          domain: http://infisical-infisical-standalone-infisical.infisical.svc.cluster.local:8080
+
       - name: Cache MekHQ tarball
         id: cache-tarball
         uses: actions/cache@v4
@@ -47,13 +58,28 @@ jobs:
           path: mekhq.tar.gz
           key: mekhq-tarball-${{ steps.version.outputs.version }}
 
-      - name: Download MekHQ tarball
-        if: steps.cache-tarball.outputs.cache-hit != 'true'
+      - name: Configure AWS CLI for R2
+        run: |
+          aws configure set aws_access_key_id $FP_R2_ACCESS_KEY_ID
+          aws configure set aws_secret_access_key $FP_R2_SECRET_ACCESS_KEY
+          aws configure set region auto
+          aws configure set output json
+
+      - name: Download MekHQ tarball from R2
+        id: download-tarball
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          URL="https://github.com/MegaMek/mekhq/releases/download/v${VERSION}/MekHQ-${VERSION}.tar.gz"
-          echo "Downloading from $URL"
-          curl -L -o mekhq.tar.gz "$URL"
+          BUNDLE_NAME="MekHQ-${VERSION}.tar.gz"
+          OBJECT_KEY="mekhq/${BUNDLE_NAME}"
+          
+           if aws --endpoint-url https://${FP_R2_ACCOUNT_ID}.r2.cloudflarestorage.com s3 ls s3://${FP_R2_BUCKET_NAME}/${OBJECT_KEY} 2>/dev/null; then
+            echo "✓ Downloaded ${OBJECT_KEY} from R2"
+          else
+            echo "File not found in R2, downloading from GitHub releases"
+            curl -L -o mekhq.tar.gz "https://github.com/MegaMek/mekhq/releases/download/v${VERSION}/MekHQ-${VERSION}.tar.gz"
+            aws --endpoint-url https://${FP_R2_ACCOUNT_ID}.r2.cloudflarestorage.com s3 cp mekhq.tar.gz s3://${FP_R2_BUCKET_NAME}/${OBJECT_KEY}
+            echo "✓ Uploaded ${OBJECT_KEY} to R2"
+          fi
           ls -lh mekhq.tar.gz
 
       - name: Build Flatpak
@@ -62,6 +88,16 @@ jobs:
           bundle: mekhq-${{ steps.version.outputs.version_tag }}.flatpak
           manifest-path: com.megamek.mekhq.json
           cache-key: flatpak-builder-${{ hashFiles('com.megamek.mekhq.json', 'mekhq-wrapper.sh') }}
+
+      - name: Upload flatpak to R2
+        run: |
+          VERSION_TAG="${{ steps.version.outputs.version_tag }}"
+          BUNDLE_NAME="mekhq-${VERSION_TAG}.flatpak"
+          
+          aws --endpoint-url https://${FP_R2_ACCOUNT_ID}.r2.cloudflarestorage.com s3 cp ${BUNDLE_NAME} s3://${FP_R2_BUCKET_NAME}/flatpak/${BUNDLE_NAME}
+          aws --endpoint-url https://${FP_R2_ACCOUNT_ID}.r2.cloudflarestorage.com s3 cp ${BUNDLE_NAME} s3://${FP_R2_BUCKET_NAME}/flatpak/mekhq-latest.flatpak
+          
+           echo "Uploaded ${BUNDLE_NAME} to R2"
 
       - name: Generate .flatpakrepo file
         run: |
