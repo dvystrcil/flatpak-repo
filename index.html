@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MekHQ Flatpak Repository</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Roboto+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-base: #0a0e14;
+      --bg-elevated: #11161f;
+      --bg-card: #161c28;
+      --bg-card-hover: #1c2433;
+      --border: #2a3447;
+      --border-strong: #3a4760;
+      --accent: #c9a227;
+      --accent-bright: #e6b933;
+      --accent-dim: #8a6d1a;
+      --danger: #c8412e;
+      --text-primary: #d8dee8;
+      --text-secondary: #8c95a8;
+      --text-muted: #5a6478;
+      --terminal-green: #6dbf6d;
+      --shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      background: var(--bg-base);
+      color: var(--text-primary);
+      font-family: 'Inter', system-ui, sans-serif;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    body {
+      background-image:
+        linear-gradient(rgba(201, 162, 39, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(201, 162, 39, 0.025) 1px, transparent 1px);
+      background-size: 40px 40px;
+      background-position: -1px -1px;
+    }
+
+    .top-bar {
+      background: linear-gradient(180deg, #0d1117 0%, #0a0e14 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(10px);
+    }
+
+    .top-bar-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: 1.1rem;
+      letter-spacing: 0.15em;
+      color: var(--accent);
+      text-transform: uppercase;
+    }
+
+    .brand-mark {
+      width: 28px; height: 28px;
+      border: 2px solid var(--accent);
+      transform: rotate(45deg);
+      position: relative;
+    }
+    .brand-mark::before {
+      content: '';
+      position: absolute;
+      inset: 4px;
+      background: var(--accent);
+      opacity: 0.4;
+    }
+
+    .top-status {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .status-dot {
+      display: inline-block;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--terminal-green);
+      box-shadow: 0 0 8px var(--terminal-green);
+      margin-right: 0.5rem;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .hero {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 4rem 2rem 3rem;
+      text-align: center;
+      position: relative;
+    }
+
+    .hero-eyebrow {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--accent);
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+    }
+
+    .hero h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      letter-spacing: 0.05em;
+      line-height: 1.1;
+      margin-bottom: 1.5rem;
+      background: linear-gradient(180deg, #f0f0f0 0%, #a8a8a8 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-transform: uppercase;
+    }
+
+    .hero h1 .accent {
+      background: linear-gradient(180deg, var(--accent-bright) 0%, var(--accent-dim) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-tagline {
+      color: var(--text-secondary);
+      font-size: 1.15rem;
+      max-width: 640px;
+      margin: 0 auto 2rem;
+    }
+
+    .hero-meta {
+      display: inline-flex;
+      gap: 2rem;
+      padding: 0.75rem 1.5rem;
+      border: 1px solid var(--border);
+      background: var(--bg-elevated);
+      font-family: 'Roboto Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      letter-spacing: 0.05em;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .hero-meta strong {
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    section {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .section-title {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: 1.5rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text-primary);
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .section-title::before {
+      content: '';
+      width: 4px; height: 20px;
+      background: var(--accent);
+      display: inline-block;
+    }
+
+    .install-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      padding: 2rem;
+      box-shadow: var(--shadow);
+      position: relative;
+    }
+
+    .install-panel::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 3px;
+      background: linear-gradient(90deg, var(--accent) 0%, transparent 100%);
+    }
+
+    .install-step {
+      margin-bottom: 1.75rem;
+    }
+    .install-step:last-child { margin-bottom: 0; }
+
+    .step-label {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--accent);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    pre {
+      background: var(--bg-base);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      padding: 1rem 1.25rem;
+      overflow-x: auto;
+      font-family: 'Roboto Mono', monospace;
+      font-size: 0.875rem;
+      color: var(--terminal-green);
+      line-height: 1.5;
+    }
+
+    code {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 0.875em;
+      color: var(--accent-bright);
+      background: rgba(201, 162, 39, 0.08);
+      padding: 0.1em 0.4em;
+      border-radius: 2px;
+    }
+    pre code {
+      background: transparent;
+      color: inherit;
+      padding: 0;
+    }
+
+    .app-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    .app-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      padding: 1.75rem;
+      transition: border-color 0.2s, transform 0.2s;
+      position: relative;
+    }
+
+    .app-card:hover {
+      border-color: var(--accent-dim);
+      transform: translateY(-2px);
+    }
+
+    .app-card-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .app-name {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: 1.5rem;
+      letter-spacing: 0.05em;
+      color: var(--accent);
+    }
+
+    .app-id {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+    }
+
+    .app-description {
+      color: var(--text-secondary);
+      margin-bottom: 1.25rem;
+      font-size: 0.95rem;
+    }
+
+    .spec-table {
+      display: grid;
+      grid-template-columns: max-content 1fr;
+      gap: 0.4rem 1.5rem;
+      font-family: 'Roboto Mono', monospace;
+      font-size: 0.8rem;
+      margin: 1rem 0 1.5rem;
+      padding: 1rem 1.25rem;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+    }
+    .spec-table dt {
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-size: 0.7rem;
+    }
+    .spec-table dd { color: var(--text-primary); }
+    .spec-table a { color: var(--accent); text-decoration: none; }
+    .spec-table a:hover { text-decoration: underline; }
+
+    .button-row {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1.25rem;
+      font-family: 'Roboto Mono', monospace;
+      font-size: 0.8rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      text-decoration: none;
+      border: 1px solid var(--border-strong);
+      background: transparent;
+      color: var(--text-primary);
+      transition: all 0.15s;
+      cursor: pointer;
+    }
+    .btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(201, 162, 39, 0.05);
+    }
+    .btn-primary {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .btn-primary:hover {
+      background: var(--accent);
+      color: var(--bg-base);
+    }
+
+    .ops-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+
+    .ops-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      padding: 1.25rem;
+    }
+
+    .ops-card h3 {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--accent);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+    }
+
+    .ops-card pre {
+      margin-top: 0.5rem;
+      font-size: 0.8rem;
+    }
+
+    .notice {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--danger);
+      padding: 1rem 1.25rem;
+      margin: 2rem 0;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+    .notice strong {
+      color: var(--danger);
+      font-family: 'Roboto Mono', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 0.4rem;
+    }
+
+    footer {
+      max-width: 1100px;
+      margin: 4rem auto 0;
+      padding: 2rem;
+      border-top: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      text-align: center;
+    }
+    footer a { color: var(--text-secondary); text-decoration: none; }
+    footer a:hover { color: var(--accent); }
+    footer p { margin-bottom: 0.5rem; }
+
+    .legal {
+      margin-top: 1.5rem;
+      font-family: 'Roboto Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.05em;
+      line-height: 1.6;
+    }
+
+    .bracket-frame { position: relative; }
+    .bracket-frame::before,
+    .bracket-frame::after {
+      content: '';
+      position: absolute;
+      width: 16px; height: 16px;
+      border: 2px solid var(--accent);
+    }
+    .bracket-frame::before {
+      top: -1px; left: -1px;
+      border-right: none;
+      border-bottom: none;
+    }
+    .bracket-frame::after {
+      bottom: -1px; right: -1px;
+      border-left: none;
+      border-top: none;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="top-bar">
+    <div class="top-bar-inner">
+      <div class="brand">
+        <span class="brand-mark"></span>
+        <span>MekHQ Flatpak Repo</span>
+      </div>
+      <div class="top-status">
+        <span class="status-dot"></span>Repository Online · __VERSION_TAG__
+      </div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="hero-eyebrow">// Self-Hosted Distribution Channel</div>
+    <h1>Deploy <span class="accent">MekHQ</span><br>To Your Linux Workstation</h1>
+    <p class="hero-tagline">
+      A self-hosted Flatpak repository for MekHQ and the MegaMek suite.
+      Built and published from CI for testing and personal deployment.
+    </p>
+    <div class="hero-meta">
+      <span><strong>VERSION:</strong> __VERSION_TAG__</span>
+      <span><strong>RUNTIME:</strong> Freedesktop 24.08</span>
+      <span><strong>JAVA:</strong> OpenJDK 21</span>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="section-title">Field Deployment</h2>
+    <div class="install-panel bracket-frame">
+      <div class="install-step">
+        <div class="step-label">[01] Add Repository</div>
+        <pre><code>flatpak remote-add --user --if-not-exists mekhq-repo \
+  https://dvystrcil.github.io/flatpak-repo/mekhq.flatpakrepo</code></pre>
+      </div>
+      <div class="install-step">
+        <div class="step-label">[02] Install MekHQ</div>
+        <pre><code>flatpak install --user mekhq-repo com.megamek.mekhq</code></pre>
+      </div>
+      <div class="install-step">
+        <div class="step-label">[03] Launch</div>
+        <pre><code>flatpak run com.megamek.mekhq</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="section-title">Available Units</h2>
+    <div class="app-grid">
+
+      <article class="app-card">
+        <div class="app-card-header">
+          <h3 class="app-name">MekHQ</h3>
+          <span class="app-id">com.megamek.mekhq</span>
+        </div>
+        <p class="app-description">
+          Campaign manager for the BattleTech universe. Track personnel,
+          finances, contracts, repairs, and unit logistics across multiple
+          engagements. Integrates with MegaMek for tactical combat resolution.
+        </p>
+        <dl class="spec-table">
+          <dt>VERSION</dt><dd>__VERSION_TAG__</dd>
+          <dt>RUNTIME</dt><dd>org.freedesktop.Platform//24.08</dd>
+          <dt>SDK EXT</dt><dd>org.freedesktop.Sdk.Extension.openjdk21</dd>
+          <dt>UPSTREAM</dt><dd><a href="https://github.com/MegaMek/mekhq">MegaMek/mekhq</a></dd>
+        </dl>
+        <div class="button-row">
+          <a href="__BUNDLE_NAME__" class="btn btn-primary">⬇ Download __VERSION_TAG__</a>
+          <a href="mekhq-latest.flatpak" class="btn">Latest Bundle</a>
+          <a href="https://megamek.org/" class="btn">Project Site</a>
+          <a href="https://github.com/MegaMek/mekhq" class="btn">Source</a>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <section>
+    <h2 class="section-title">Operations</h2>
+    <div class="ops-grid">
+      <div class="ops-card">
+        <h3>Update</h3>
+        <pre><code>flatpak update --user com.megamek.mekhq</code></pre>
+      </div>
+      <div class="ops-card">
+        <h3>Uninstall</h3>
+        <pre><code>flatpak uninstall --user com.megamek.mekhq</code></pre>
+      </div>
+      <div class="ops-card">
+        <h3>Remove Remote</h3>
+        <pre><code>flatpak remote-delete --user mekhq-repo</code></pre>
+      </div>
+      <div class="ops-card">
+        <h3>Run From Terminal</h3>
+        <pre><code>flatpak run com.megamek.mekhq</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="notice">
+      <strong>⚠ Operational Notice</strong>
+      This repository is currently unsigned and provided for testing purposes only.
+      GPG signing will be added prior to wider distribution. Not affiliated with
+      the upstream MegaMek project.
+    </div>
+  </section>
+
+  <footer>
+    <p>
+      <a href="https://github.com/dvystrcil/flatpak-repo">Repository</a> ·
+      <a href="https://megamek.org/">MegaMek Project</a> ·
+      <a href="https://github.com/MegaMek">Upstream Source</a>
+    </p>
+    <p class="legal">
+      MEKHQ AND THE MEGAMEK SUITE ARE LICENSED UNDER THE GPL BY THEIR UPSTREAM MAINTAINERS.<br>
+      MECHWARRIOR, BATTLEMECH, 'MECH AND AEROTECH ARE REGISTERED TRADEMARKS OF THE TOPPS COMPANY, INC.<br>
+      THIS PACKAGING IS PROVIDED AS-IS FOR TESTING.
+    </p>
+  </footer>
+
+</body>
+</html>
