@@ -5,4 +5,7 @@
 export JAVA_HOME=/app/jre
 export PATH="${JAVA_HOME}/bin:${PATH}"
 
+# Change to MekHQ directory so relative paths work correctly
+cd /app/mekhq
+
 exec /app/mekhq/bin/MekHQ "$@"
