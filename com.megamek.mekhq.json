@@ -19,13 +19,6 @@
   ],
   "modules": [
     {
-      "name": "openjdk",
-      "buildsystem": "simple",
-      "build-commands": [
-        "/usr/lib/sdk/openjdk21/install.sh"
-      ]
-    },
-    {
       "name": "mekhq",
       "buildsystem": "simple",
       "build-commands": [
