@@ -44,7 +44,7 @@
         "jar cf /app/mekhq/lib/mekhq-config.jar -C /tmp/config-classes .",
         "rm -rf /tmp/config-classes",
         "rm -f /app/mekhq/mmconf/milestoneReleases.yml",
-        "sed -i \"s|CLASSPATH=\\$APP_HOME/lib/MekHQ.jar:|CLASSPATH=/app/mekhq/lib/mekhq-config.jar:\\$APP_HOME/lib/MekHQ.jar:|\" /app/mekhq/bin/MekHQ",
+        "sed -i 's~CLASSPATH=\\$APP_HOME/lib/MekHQ.jar:~CLASSPATH=/app/mekhq/lib/mekhq-config.jar:\\$APP_HOME/lib/MekHQ.jar:~' /app/mekhq/bin/MekHQ",
         "chmod +x /app/mekhq/bin/MekHQ /app/mekhq/bin/MegaMek /app/mekhq/bin/MegaMekLab",
         "chmod +x /app/mekhq/MekHQ.sh /app/mekhq/MegaMek.sh /app/mekhq/MegaMekLab.sh",
         "install -Dm755 sources/mekhq-wrapper.sh /app/bin/mekhq",
