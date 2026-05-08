@@ -73,12 +73,13 @@ jobs:
           BUNDLE_NAME="MekHQ-${VERSION}.tar.gz"
           OBJECT_KEY="mekhq/${BUNDLE_NAME}"
           
-           if aws --endpoint-url https://${FP_R2_ACCOUNT_ID}.r2.cloudflarestorage.com s3 ls s3://${FP_R2_BUCKET_NAME}/${OBJECT_KEY} 2>/dev/null; then
+          ENDPOINT="https://${FP_R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
+          if aws --endpoint-url "$ENDPOINT" s3 cp s3://${FP_R2_BUCKET_NAME}/${OBJECT_KEY} mekhq.tar.gz 2>/dev/null; then
             echo "✓ Downloaded ${OBJECT_KEY} from R2"
           else
             echo "File not found in R2, downloading from GitHub releases"
             curl -L -o mekhq.tar.gz "https://github.com/MegaMek/mekhq/releases/download/v${VERSION}/MekHQ-${VERSION}.tar.gz"
-            aws --endpoint-url https://${FP_R2_ACCOUNT_ID}.r2.cloudflarestorage.com s3 cp mekhq.tar.gz s3://${FP_R2_BUCKET_NAME}/${OBJECT_KEY}
+            aws --endpoint-url "$ENDPOINT" s3 cp mekhq.tar.gz s3://${FP_R2_BUCKET_NAME}/${OBJECT_KEY}
             echo "✓ Uploaded ${OBJECT_KEY} to R2"
           fi
           ls -lh mekhq.tar.gz
