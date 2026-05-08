@@ -46,6 +46,8 @@
         "chmod +x /app/mekhq/bin/MekHQ /app/mekhq/bin/MegaMek /app/mekhq/bin/MegaMekLab",
         "chmod +x /app/mekhq/MekHQ.sh /app/mekhq/MegaMek.sh /app/mekhq/MegaMekLab.sh",
         "install -Dm755 sources/mekhq-wrapper.sh /app/bin/mekhq",
+        "ln -sf mekhq /app/bin/megamek",
+        "ln -sf mekhq /app/bin/megameklab",
         "install -Dm644 sources/mekhq.png /app/share/icons/hicolor/256x256/apps/com.megamek.mekhq.png",
         "install -Dm644 sources/com.megamek.mekhq.metainfo.xml /app/share/metainfo/com.megamek.mekhq.metainfo.xml",
         "install -Dm644 sources/com.megamek.mekhq.desktop /app/share/applications/com.megamek.mekhq.desktop"
