@@ -10,7 +10,7 @@
   "finish-args": [
     "--share=network",
     "--share=ipc",
-    "--socket=fallback-x11",
+    "--socket=x11",
     "--socket=wayland",
     "--device=dri",
     "--filesystem=home",
@@ -42,6 +42,7 @@
         "rm -f /app/mekhq/*.l4j.ini",
         "rm -f /app/mekhq/bin/*.bat",
         "rm -f /app/mekhq/SubmitBug.html",
+        "sed -i 's|\"logs/|\"${sys:mekhq.logDir}/|g; s|basePath=\"logs\"|basePath=\"${sys:mekhq.logDir}\"|g' /app/mekhq/mmconf/log4j2.xml",
         "chmod +x /app/mekhq/bin/MekHQ /app/mekhq/bin/MegaMek /app/mekhq/bin/MegaMekLab",
         "chmod +x /app/mekhq/MekHQ.sh /app/mekhq/MegaMek.sh /app/mekhq/MegaMekLab.sh",
         "install -Dm755 sources/mekhq-wrapper.sh /app/bin/mekhq",
