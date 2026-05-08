@@ -17,7 +17,20 @@
     "--filesystem=xdg-download",
     "--filesystem=/app"
   ],
+  "build-options": {
+    "append-path": "/usr/lib/sdk/openjdk21/bin",
+    "env": {
+      "JAVA_HOME": "/usr/lib/sdk/openjdk21/jvm/openjdk-21"
+    }
+  },
   "modules": [
+    {
+      "name": "openjdk",
+      "buildsystem": "simple",
+      "build-commands": [
+        "/usr/lib/sdk/openjdk21/install.sh"
+      ]
+    },
     {
       "name": "mekhq",
       "buildsystem": "simple",
