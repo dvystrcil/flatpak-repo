@@ -7,7 +7,7 @@ jobs:
   test:
     runs-on: flatpack-runner
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install flatpak from PPA
         run: |
