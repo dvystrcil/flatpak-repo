@@ -24,6 +24,8 @@ permissions:
 jobs:
   build:
     runs-on: flatpak-repo-runner
+    outputs:
+      version: ${{ steps.version.outputs.version }}
     container:
       image: ghcr.io/flathub-infra/flatpak-github-actions:gnome-48
       options: --privileged
@@ -156,3 +158,29 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+  # Records the version we just shipped so watch-upstream.yml knows not to
+  # re-dispatch it. Runs only after build+deploy succeed, so the marker
+  # tracks the last *successfully published* version (a failed build leaves
+  # it untouched and the watcher retries). The marker file is not in the
+  # build push-path filter, so this commit does not re-trigger build.yml.
+  record-version:
+    needs: [build, deploy]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+      - name: Record published MekHQ version
+        run: |
+          version="${{ needs.build.outputs.version }}"
+          printf '%s\n' "$version" > .last-built-version
+          if git diff --quiet .last-built-version; then
+            echo "Marker already at ${version} — nothing to commit"
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .last-built-version
+          git commit -m "chore: record published MekHQ version ${version}"
+          git push

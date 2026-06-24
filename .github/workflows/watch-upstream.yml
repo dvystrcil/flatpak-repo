@@ -1,0 +1,52 @@
+name: Watch MekHQ releases
+
+# Polls MegaMek/mekhq for a new release and auto-dispatches build.yml so a
+# fresh MekHQ never needs a manual build. MegaMek, MekHQ and MegaMekLab ship
+# in lockstep, so the MekHQ tag IS the MegaMek version (this flatpak packages
+# MekHQ, which bundles all three).
+#
+# State lives in .last-built-version, which build.yml's record-version job
+# advances ONLY after a build+deploy succeeds. So a failed build leaves the
+# marker behind and this watcher simply re-dispatches on its next run — no
+# stuck "we already tried" state.
+
+on:
+  schedule:
+    - cron: '0 8 * * *'   # daily 08:00 UTC
+  workflow_dispatch: {}    # manual "check now"
+
+permissions:
+  contents: read           # read the marker
+  actions: write           # dispatch build.yml
+
+jobs:
+  check:
+    name: Dispatch build on new MekHQ release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Compare latest release against last built
+        id: compare
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          latest="$(gh api repos/MegaMek/mekhq/releases/latest -q .tag_name)"
+          latest="${latest#v}"                         # strip leading v
+          built="$(cat .last-built-version 2>/dev/null || echo none)"
+          built="$(printf '%s' "$built" | tr -d '[:space:]')"
+          echo "latest=$latest" >> "$GITHUB_OUTPUT"
+          echo "built=$built"   >> "$GITHUB_OUTPUT"
+          echo "MekHQ latest=$latest | last built=$built"
+
+      - name: Dispatch flatpak build
+        if: steps.compare.outputs.latest != steps.compare.outputs.built
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo "New MekHQ ${{ steps.compare.outputs.latest }} (last built ${{ steps.compare.outputs.built }}) — dispatching build.yml"
+          gh workflow run build.yml -f version="${{ steps.compare.outputs.latest }}"
+
+      - name: Already up to date
+        if: steps.compare.outputs.latest == steps.compare.outputs.built
+        run: echo "MekHQ ${{ steps.compare.outputs.built }} already built — nothing to do"
