@@ -5,10 +5,11 @@ name: Watch MekHQ releases
 # in lockstep, so the MekHQ tag IS the MegaMek version (this flatpak packages
 # MekHQ, which bundles all three).
 #
-# State lives in .last-built-version, which build.yml's record-version job
-# advances ONLY after a build+deploy succeeds. So a failed build leaves the
-# marker behind and this watcher simply re-dispatches on its next run — no
-# stuck "we already tried" state.
+# State is a git tag `mekhq-built-<version>` that build.yml's record-version
+# job creates ONLY after a successful build+deploy. (We can't commit a marker
+# to main — a ruleset requires PRs — and tags sidestep that.) A failed build
+# creates no tag, so this watcher simply re-dispatches next run; no stuck
+# "already tried" state.
 
 on:
   schedule:
@@ -16,7 +17,7 @@ on:
   workflow_dispatch: {}    # manual "check now"
 
 permissions:
-  contents: read           # read the marker
+  contents: read           # read tags + MekHQ releases
   actions: write           # dispatch build.yml
 
 jobs:
@@ -24,29 +25,27 @@ jobs:
     name: Dispatch build on new MekHQ release
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-
-      - name: Compare latest release against last built
+      - name: Compare latest release against built tags
         id: compare
         env:
           GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
         run: |
           latest="$(gh api repos/MegaMek/mekhq/releases/latest -q .tag_name)"
           latest="${latest#v}"                         # strip leading v
-          built="$(cat .last-built-version 2>/dev/null || echo none)"
-          built="$(printf '%s' "$built" | tr -d '[:space:]')"
-          echo "latest=$latest" >> "$GITHUB_OUTPUT"
-          echo "built=$built"   >> "$GITHUB_OUTPUT"
-          echo "MekHQ latest=$latest | last built=$built"
+          if gh api "repos/${REPO}/git/ref/tags/mekhq-built-${latest}" >/dev/null 2>&1; then
+            echo "MekHQ ${latest} already built (tag mekhq-built-${latest} exists) — nothing to do"
+            echo "build=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "MekHQ ${latest} not yet built — will dispatch"
+            echo "build=true" >> "$GITHUB_OUTPUT"
+            echo "latest=${latest}" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Dispatch flatpak build
-        if: steps.compare.outputs.latest != steps.compare.outputs.built
+        if: steps.compare.outputs.build == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          echo "New MekHQ ${{ steps.compare.outputs.latest }} (last built ${{ steps.compare.outputs.built }}) — dispatching build.yml"
+          echo "Dispatching build.yml for MekHQ ${{ steps.compare.outputs.latest }}"
           gh workflow run build.yml -f version="${{ steps.compare.outputs.latest }}"
-
-      - name: Already up to date
-        if: steps.compare.outputs.latest == steps.compare.outputs.built
-        run: echo "MekHQ ${{ steps.compare.outputs.built }} already built — nothing to do"
