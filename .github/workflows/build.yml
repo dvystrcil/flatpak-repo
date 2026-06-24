@@ -159,28 +159,29 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
-  # Records the version we just shipped so watch-upstream.yml knows not to
-  # re-dispatch it. Runs only after build+deploy succeed, so the marker
-  # tracks the last *successfully published* version (a failed build leaves
-  # it untouched and the watcher retries). The marker file is not in the
-  # build push-path filter, so this commit does not re-trigger build.yml.
+  # Records the version we just shipped (a git tag `mekhq-built-<version>`) so
+  # watch-upstream.yml knows not to re-dispatch it. Runs only after build+deploy
+  # succeed, so the tag marks the last *successfully published* version — a
+  # failed build creates no tag and the watcher retries. A tag is used rather
+  # than a commit because main requires PRs (ruleset); tags are unrestricted.
   record-version:
     needs: [build, deploy]
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v5
-      - name: Record published MekHQ version
+      - name: Tag published MekHQ version
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+          VERSION: ${{ needs.build.outputs.version }}
         run: |
-          version="${{ needs.build.outputs.version }}"
-          printf '%s\n' "$version" > .last-built-version
-          if git diff --quiet .last-built-version; then
-            echo "Marker already at ${version} — nothing to commit"
+          tag="mekhq-built-${VERSION}"
+          if gh api "repos/${REPO}/git/ref/tags/${tag}" >/dev/null 2>&1; then
+            echo "Tag ${tag} already exists — nothing to do"
             exit 0
           fi
-          git config user.name  "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .last-built-version
-          git commit -m "chore: record published MekHQ version ${version}"
-          git push
+          gh api -X POST "repos/${REPO}/git/refs" \
+            -f ref="refs/tags/${tag}" -f sha="${SHA}"
+          echo "Tagged ${tag}"
