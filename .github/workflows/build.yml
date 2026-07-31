@@ -55,7 +55,7 @@ jobs:
 
       - name: Cache MekHQ tarball
         id: cache-tarball
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: mekhq.tar.gz
           key: mekhq-tarball-${{ steps.version.outputs.version }}
