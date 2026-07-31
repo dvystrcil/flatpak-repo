@@ -157,7 +157,7 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
 
   # Records the version we just shipped (a git tag `mekhq-built-<version>`) so
   # watch-upstream.yml knows not to re-dispatch it. Runs only after build+deploy
