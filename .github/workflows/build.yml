@@ -30,7 +30,7 @@ jobs:
       image: ghcr.io/flathub-infra/flatpak-github-actions:gnome-48
       options: --privileged
     steps:
-      - uses: actions/checkout@v5
+      -         uses: actions/checkout@v7
 
       - name: Set version
         id: version
@@ -55,7 +55,7 @@ jobs:
 
       - name: Cache MekHQ tarball
         id: cache-tarball
-        uses: actions/cache@v6
+        uses: actions/cache@v6.1.0
         with:
           path: mekhq.tar.gz
           key: mekhq-tarball-${{ steps.version.outputs.version }}
@@ -137,12 +137,12 @@ jobs:
           ls -la pages-deploy/
 
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5.0.0
         with:
           path: pages-deploy
 
       - name: Upload build artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: mekhq-flatpak-${{ steps.version.outputs.version_tag }}
           path: mekhq-${{ steps.version.outputs.version_tag }}.flatpak
@@ -157,7 +157,7 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5.0.0
 
   # Records the version we just shipped (a git tag `mekhq-built-<version>`) so
   # watch-upstream.yml knows not to re-dispatch it. Runs only after build+deploy
