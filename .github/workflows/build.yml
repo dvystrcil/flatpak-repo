@@ -209,7 +209,7 @@ jobs:
           path: pages-deploy
 
       - name: Upload build artifact
-        uses: actions/upload-artifact@v7.0.1
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: mekhq-flatpak-${{ steps.version.outputs.version_tag }}
           path: mekhq-${{ steps.version.outputs.version_tag }}.flatpak
