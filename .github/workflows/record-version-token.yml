@@ -1,0 +1,50 @@
+name: record-version token check
+
+# record-version (build.yml) writes the mekhq-built-<version> tag that
+# watch-upstream.yml reads as "already built". That write only happens when a
+# new MekHQ version ships, so a broken credential would surface months later,
+# mid-release (#22). This mints the SAME token -- CICD App, contents: write --
+# and makes one read with it, whenever the job that uses it changes. It
+# writes nothing.
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/build.yml'
+      - '.github/workflows/record-version-token.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  token:
+    runs-on: flatpak-repo-runner
+    steps:
+      - name: Fetch secrets from Infisical
+        uses: Infisical/secrets-action@v1.0.18
+        with:
+          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
+          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+          env-slug: prod
+          project-slug: homelab-bz-gt
+          secret-path: /
+          export-type: env
+          domain: http://infisical-infisical-standalone-infisical.infisical.svc.cluster.local:8080
+
+      - uses: actions/create-github-app-token@v3
+        id: app-token
+        with:
+          client-id: ${{ env.CICD_APP_CLIENT_ID }}
+          private-key: ${{ env.CICD_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: flatpak-repo
+          permission-contents: write
+
+      - name: The token reaches this repo's refs
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          set -euo pipefail
+          gh api "repos/${{ github.repository }}/git/matching-refs/tags/mekhq-built" --jq '.[].ref'
+          echo "RECORD-VERSION-TOKEN-OK"
