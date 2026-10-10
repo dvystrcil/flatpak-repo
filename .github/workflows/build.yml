@@ -231,15 +231,45 @@ jobs:
   # succeed, so the tag marks the last *successfully published* version — a
   # failed build creates no tag and the watcher retries. A tag is used rather
   # than a commit because main requires PRs (ruleset); tags are unrestricted.
+  # The tag below is the state marker watch-upstream.yml reads, so a write
+  # that fails leaves "what is built" and "what is published" apart (#21).
+  # It is written with the CICD App, not github.token (#22): the default token
+  # 403'd on git/refs in 2 of 2 runs that actually tried to create a tag
+  # (2026-06-24, 2026-07-31) despite `contents: write` taking effect, and
+  # every "success" since only skipped because the tag already existed. The
+  # App is the fleet convention for writes; Infisical is reached in-cluster,
+  # hence the in-cluster runner.
   record-version:
     needs: [build, deploy]
-    runs-on: ubuntu-latest
+    runs-on: flatpak-repo-runner
     permissions:
-      contents: write
+      contents: read
     steps:
+      - name: Fetch secrets from Infisical
+        uses: Infisical/secrets-action@v1.0.18
+        with:
+          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
+          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+          env-slug: prod
+          project-slug: homelab-bz-gt
+          secret-path: /
+          export-type: env
+          domain: http://infisical-infisical-standalone-infisical.infisical.svc.cluster.local:8080
+
+      - uses: actions/create-github-app-token@v3
+        id: app-token
+        with:
+          client-id: ${{ env.CICD_APP_CLIENT_ID }}
+          private-key: ${{ env.CICD_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: flatpak-repo
+          # Declared so a missing permission fails as an auth error naming
+          # the scope, not as a bare 403 on the ref write.
+          permission-contents: write
+
       - name: Tag published MekHQ version
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
           REPO: ${{ github.repository }}
           SHA: ${{ github.sha }}
           VERSION: ${{ needs.build.outputs.version }}
