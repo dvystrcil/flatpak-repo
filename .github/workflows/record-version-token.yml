@@ -4,8 +4,11 @@ name: record-version token check
 # watch-upstream.yml reads as "already built". That write only happens when a
 # new MekHQ version ships, so a broken credential would surface months later,
 # mid-release (#22). This mints the SAME token -- CICD App, contents: write --
-# and makes one read with it, whenever the job that uses it changes. It
-# writes nothing.
+# and makes the SAME call with it: POST /git/refs for a tag, whenever the job
+# that uses it changes. A read only proves the token can SEE refs; the 403 in
+# #22 was on the create. The scratch tag (token-check-<run>-<attempt>) points
+# at main's head and is deleted at once, trap-guarded. No workflow triggers on
+# tags, so it starts nothing.
 
 on:
   pull_request:
@@ -41,10 +44,21 @@ jobs:
           repositories: flatpak-repo
           permission-contents: write
 
-      - name: The token reaches this repo's refs
+      - name: The token can create and delete a tag ref (the call record-version makes)
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          REPO: ${{ github.repository }}
+          TAG: token-check-${{ github.run_id }}-${{ github.run_attempt }}
         run: |
           set -euo pipefail
-          gh api "repos/${{ github.repository }}/git/matching-refs/tags/mekhq-built" --jq '.[].ref'
-          echo "RECORD-VERSION-TOKEN-OK"
+          gh api "repos/${REPO}/git/matching-refs/tags/mekhq-built" --jq '.[].ref'
+          sha=$(gh api "repos/${REPO}/commits/main" --jq .sha)
+          cleanup() { gh api -X DELETE "repos/${REPO}/git/refs/tags/${TAG}" >/dev/null 2>&1 || true; }
+          trap cleanup EXIT
+          gh api -X POST "repos/${REPO}/git/refs" -f ref="refs/tags/${TAG}" -f sha="${sha}" --jq .ref
+          gh api -X DELETE "repos/${REPO}/git/refs/tags/${TAG}"
+          if gh api "repos/${REPO}/git/ref/tags/${TAG}" >/dev/null 2>&1; then
+            echo "::error::scratch tag ${TAG} still exists after DELETE"; exit 1
+          fi
+          trap - EXIT
+          echo "RECORD-VERSION-TOKEN-OK created+deleted ${TAG}"
