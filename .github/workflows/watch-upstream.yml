@@ -24,6 +24,12 @@ jobs:
   check:
     name: Dispatch build on new MekHQ release
     runs-on: ubuntu-latest
+    # No checkout in this job, so `gh workflow run` can't ask git which repo
+    # it's in and dies with "not a git repository" -- which it did on every
+    # run while MekHQ 0.51.00.2 was latest (homelab#1841). GH_REPO tells gh.
+    # watch-upstream-check.yml asserts this stays set.
+    env:
+      GH_REPO: ${{ github.repository }}
     steps:
       - name: Compare latest release against built tags
         id: compare
