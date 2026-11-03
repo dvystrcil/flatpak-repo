@@ -30,7 +30,7 @@ permissions:
 
 jobs:
   dispatch-resolves-repo:
-    runs-on: ubuntu-latest
+    runs-on: flatpak-repo-runner   # same runner as the watcher it models
     env:
       GH_TOKEN: ${{ github.token }}
       GH_REPO: ${{ github.repository }}
