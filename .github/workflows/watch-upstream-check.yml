@@ -68,8 +68,9 @@ jobs:
 
       - name: Negative control - without GH_REPO it fails like homelab#1841
         run: |
-          set -uo pipefail
-          out=$(env -u GH_REPO gh workflow view build.yml 2>&1); rc=$?
+          # Actions runs steps with bash -e; capture the expected failure
+          # instead of letting it end the step.
+          out=$(env -u GH_REPO gh workflow view build.yml 2>&1) && rc=0 || rc=$?
           echo "$out"
           if [ "$rc" -eq 0 ] || ! grep -q 'not a git repository' <<<"$out"; then
             echo "control did not reproduce the failure; check can't discriminate"; exit 1
