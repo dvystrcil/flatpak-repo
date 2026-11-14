@@ -3,15 +3,52 @@ name: PR Validation - Flatpak Build
 on:
   pull_request:
     branches: [ main ]
+    # Named explicitly, like build.yml (#21). The old '**.json' glob matched
+    # renovate.json, so every Renovate/config PR ran a flatpak build that had
+    # nothing to do with it.
     paths:
-      - '**.json'
-      - '**.sh'
-      - '**.png'
-      - '**.desktop'
+      - 'com.megamek.mekhq.json'
+      - 'com.megamek.mekhq.metainfo.xml'
+      - 'com.megamek.mekhq.desktop'
+      - 'mekhq-wrapper.sh'
+      - 'mekhq.png'
+      - '.github/workflows/pr-validation.yml'
+
+permissions:
+  contents: read
 
 jobs:
+  # The manifest builds from a local mekhq.tar.gz that build.yml fetches before
+  # flatpak-builder runs. This job never fetched it, so it failed with
+  # "Can't find file at mekhq.tar.gz" on every PR since it was added. It
+  # validates against the version currently published (the latest
+  # mekhq-built-* tag), fetched from the public upstream release, so a PR
+  # build needs no R2 credentials.
+  resolve-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.resolve.outputs.version }}
+    steps:
+      - name: Resolve published MekHQ version
+        id: resolve
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          version="$(gh api "repos/${REPO}/git/matching-refs/tags/mekhq-built-" \
+            --jq '.[].ref | sub("^refs/tags/mekhq-built-"; "")' \
+            | sort -V | tail -1)"
+          if [ -z "$version" ]; then
+            echo "::error::No mekhq-built-* tag exists, so there is no published version to validate against."
+            exit 1
+          fi
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "Validating against MekHQ v${version}"
+
   build-pr:
     name: Build MekHQ Flatpak (PR)
+    needs: resolve-version
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/flathub-infra/flatpak-github-actions:gnome-48
@@ -20,7 +57,16 @@ jobs:
       - uses: actions/checkout@v7
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-      
+
+      - name: Download MekHQ tarball
+        env:
+          VERSION: ${{ needs.resolve-version.outputs.version }}
+        run: |
+          set -eu
+          curl -fsSL --retry 3 -o mekhq.tar.gz \
+            "https://github.com/MegaMek/mekhq/releases/download/v${VERSION}/MekHQ-${VERSION}.tar.gz"
+          ls -lh mekhq.tar.gz
+
       - name: Build Flatpak (dry-run)
         uses: flatpak/flatpak-github-actions/flatpak-builder@v6
         with:
