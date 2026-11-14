@@ -88,7 +88,7 @@ jobs:
       image: ghcr.io/flathub-infra/flatpak-github-actions:gnome-48
       options: --privileged
     steps:
-      -         uses: actions/checkout@v7
+      -         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Set version
         id: version
@@ -101,7 +101,7 @@ jobs:
           echo "Building MekHQ v${VERSION}"
 
       - name: Fetch secrets from Infisical
-        uses: Infisical/secrets-action@v1.0.18
+        uses: Infisical/secrets-action@d2e351f16c6ca20d17c85e6c992e04bdeb64e87d # v1.0.18
         with:
           method: oidc
           identity-id: ${{ vars.INFISICAL_IDENTITY_ID }}
@@ -113,7 +113,7 @@ jobs:
 
       - name: Cache MekHQ tarball
         id: cache-tarball
-        uses: actions/cache@v6.1.0
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: mekhq.tar.gz
           key: mekhq-tarball-${{ steps.version.outputs.version }}
@@ -154,7 +154,7 @@ jobs:
           ls -lh mekhq.tar.gz
 
       - name: Build Flatpak
-        uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+        uses: flatpak/flatpak-github-actions/flatpak-builder@79327416609af08178ad73b352877e51450790b3 # v6
         with:
           bundle: mekhq-${{ steps.version.outputs.version_tag }}.flatpak
           manifest-path: com.megamek.mekhq.json
@@ -204,12 +204,12 @@ jobs:
           ls -la pages-deploy/
 
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v5.0.0
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
           path: pages-deploy
 
       - name: Upload build artifact
-        uses: actions/upload-artifact@v7.0.2
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: mekhq-flatpak-${{ steps.version.outputs.version_tag }}
           path: mekhq-${{ steps.version.outputs.version_tag }}.flatpak
@@ -224,7 +224,7 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v5.0.1
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
 
   # Records the version we just shipped (a git tag `mekhq-built-<version>`) so
   # watch-upstream.yml knows not to re-dispatch it. Runs only after build+deploy
@@ -247,7 +247,7 @@ jobs:
       id-token: write
     steps:
       - name: Fetch secrets from Infisical
-        uses: Infisical/secrets-action@v1.0.18
+        uses: Infisical/secrets-action@d2e351f16c6ca20d17c85e6c992e04bdeb64e87d # v1.0.18
         with:
           method: oidc
           identity-id: ${{ vars.INFISICAL_IDENTITY_ID }}
@@ -257,7 +257,7 @@ jobs:
           export-type: env
           domain: http://infisical-infisical-standalone-infisical.infisical.svc.cluster.local:8080
 
-      - uses: actions/create-github-app-token@v3
+      - uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3
         id: app-token
         with:
           client-id: ${{ env.CICD_APP_CLIENT_ID }}
